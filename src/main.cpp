@@ -28,13 +28,13 @@ competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 controller::lcd screen = Controller1.Screen;
 
-void pre_auton(void){
+void pre_auton(void){//Pre_auton setup
 
 }
-void autonomous(void){
+void autonomous(void){//Autonomous
 
 }
-
+//System Variables for operating robot. Tells Robot State
 bool Breaks = false;
 float speed_mod = 0.75; 
 float elevator_mod = 1;
@@ -43,18 +43,18 @@ bool elevator = false;
 bool elevatormode = false;
 bool elevatordir = false;
 
-void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){
-  screen.clearScreen();
-  screen.setCursor(0,0);
+void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){//Updates Screen
+  screen.clearScreen();//clear screen
+  screen.setCursor(0,0);//set cursor
   //Drive System Status
   if(Breaks){
-    screen.print("Held ");
+    screen.print("Stop ");
   }
   else{
     screen.print("Free ");
   }
   screen.setCursor(5,0);
-  screen.print(Speed*100);
+  screen.print(Speed*100);//Print drive speed %
   //Intake System Status
   screen.setCursor(0,1);
   if(IntakeSet){
@@ -73,106 +73,110 @@ void Drive(float stick_up, float stick_side, float speed_mod){//Using Arcade Con
   rightMotor.spin(forward, speed_mod*((stick_up - stick_side)/2), velocityUnits::pct);  //speed(up-over)/2
 }
 
-void ResetIntakes(){
-  while(!rightIntakeSwitch.pressing()){
+void ResetIntakes(){//Zero the intake positions
+  while(!rightIntakeSwitch.pressing()){//Unless the right button is pressed, move the intake closer to zero
     rightIntake.spinFor(reverse,10,degrees);
   }
-  while(!leftIntakeSwitch.pressing()){
+  while(!leftIntakeSwitch.pressing()){//Unless the left button is pressed, move the intake closer to zero
     leftIntake.spinFor(reverse,10,degrees);
   }
+  //Set Intake positions to 0 degrees and turns
   rightIntake.setPosition(0,degrees);
   rightIntake.setPosition(0,turns);
   leftIntake.setPosition(0,degrees);
   leftIntake.setPosition(0,turns);
 }
-void OperateIntakes(void){
-  if(Intakes){
+void OperateIntakes(void){//Run and operate the intakes
+  if(Intakes){//If intakes active, spin forward and back
     if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-      IntakeMotors.spinToPosition(180,degrees); 
+      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
     }
     else{//pull in
-      IntakeMotors.spinToPosition(0,degrees);
+      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
     }
   }
+  else{
+    IntakeMotors.stop(hold);//Stopping intakes when not active.
+  }
 }
-void usercontrol(void){
-  ResetIntakes();
-  thread IntakeThread = thread(OperateIntakes);
-  ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
-  while(true){
-    if(!Breaks){
-      Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);
+void usercontrol(void){//User control state
+  ResetIntakes();//Zero the intakes
+  thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
+  ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update the screen
+  while(true){//Start the system loop
+    if(!Breaks){//If not breaked, drive
+      Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
     }
-    if(Controller1.ButtonA.pressing()){
+    if(Controller1.ButtonA.pressing()){//Toggle breaks 
       Breaks = !Breaks;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
-      while(Controller1.ButtonA.pressing()){
+      while(Controller1.ButtonA.pressing()){//Do nothing until A is released
         task::sleep(1);
       }
     }
-    if(elevatormode == false){
+    if(elevatormode == false){//If not true, use joystick control
       Elevator.spin(forward,elevator_mod*Controller1.Axis2.value(),velocityUnits::pct);
     }
     else{
-      if(elevator == true){
-        if(elevatordir == false){
+      if(elevator == true){//If elevator is enabled
+        if(elevatordir == false){//Spin forward
           Elevator.spin(forward,elevator_mod,velocityUnits::pct);
         }
-        else{
+        else{//Spin backwards
           Elevator.spin(reverse,elevator_mod,velocityUnits::pct);
         }
       }
     }
-    if(Controller1.ButtonB.pressing()){
+    if(Controller1.ButtonB.pressing()){//Switch elevator direction
       elevatordir = !elevatordir;
       while(Controller1.ButtonB.pressing()){
         task::sleep(1);
       }
     }
-    if(Controller1.ButtonY.pressing()){
+    if(Controller1.ButtonY.pressing()){//Toggle the elevator
       elevator = !elevator;
       while(Controller1.ButtonY.pressing()){
         task::sleep(1);
       }
     }
-    if(Controller1.ButtonRight.pressing()){
+    if(Controller1.ButtonRight.pressing()){//Switch between joystick and button control.
       elevatormode = !elevatormode;
       while(Controller1.ButtonRight.pressing()){
         task::sleep(1);
       }
     }
 
-    if(Controller1.ButtonX.pressing()){
+    if(Controller1.ButtonX.pressing()){//Toggle the intakes
       Intakes = !Intakes;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       while(Controller1.ButtonX.pressing()){
        task::sleep(1);
       }
     }
-    if(Controller1.ButtonL1.pressing()){
+    if(Controller1.ButtonL1.pressing()){//Increase the drive speed
       speed_mod += 0.5;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
-    if(Controller1.ButtonL2.pressing()){
+    if(Controller1.ButtonL2.pressing()){//Decrease the drive speed
       speed_mod -= 0.5;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
-    if(Controller1.ButtonR1.pressing()){
+    if(Controller1.ButtonR1.pressing()){//Increase the elevator speed
       elevator_mod += 0.5;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
-    if(Controller1.ButtonR2.pressing()){
+    if(Controller1.ButtonR2.pressing()){//Decrease the elevator speed
       elevator_mod -= 0.5;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
-    if(Controller1.ButtonDown.pressing()){
+    if(Controller1.ButtonDown.pressing()){//Lower the ramp
       rampMotor.spinToPosition(0,degrees);
     }
-    if(Controller1.ButtonUp.pressing()){
+    if(Controller1.ButtonUp.pressing()){//Raise the ramp
       rampMotor.spinToPosition(880,degrees);
     }
     wait(20, msec);
