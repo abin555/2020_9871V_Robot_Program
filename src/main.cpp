@@ -37,14 +37,14 @@ void autonomous(void){//Autonomous
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
 float speed_mod = 0.75; 
-float elevator_mod = 1;
+float elevator_mod = 100;
 bool Intakes = false;
 bool elevator = false;
 bool elevatormode = false;
 bool elevatordir = false;
 
 void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){//Updates Screen
-  screen.clearScreen();//clear screen
+  //screen.clearScreen();//clear screen
   screen.setCursor(0,0);//set cursor
   //Drive System Status
   if(Breaks){
@@ -87,16 +87,18 @@ void ResetIntakes(){//Zero the intake positions
   leftIntake.setPosition(0,turns);
 }
 void OperateIntakes(void){//Run and operate the intakes
-  if(Intakes){//If intakes active, spin forward and back
-    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
+  while(true){
+    if(Intakes){//If intakes active, spin forward and back
+      if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
+        IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
+      }
+      else{//pull in
+        IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
+      }
     }
-    else{//pull in
-      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
+    else{
+      IntakeMotors.stop(hold);//Stopping intakes when not active.
     }
-  }
-  else{
-    IntakeMotors.stop(hold);//Stopping intakes when not active.
   }
 }
 void usercontrol(void){//User control state
@@ -107,6 +109,7 @@ void usercontrol(void){//User control state
     if(!Breaks){//If not breaked, drive
       Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
     }
+    //OperateIntakes();
     if(Controller1.ButtonA.pressing()){//Toggle breaks 
       Breaks = !Breaks;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
