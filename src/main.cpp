@@ -182,6 +182,12 @@ void usercontrol(void){//User control state
     if(Controller1.ButtonUp.pressing()){//Raise the ramp
       rampMotor.spinToPosition(880,degrees);
     }
+    if(Controller1.ButtonLeft.pressing()){//Rezero the Intakes
+      ResetIntakes();
+      while(Controller1.ButtonLeft.pressing()){
+        task::sleep(1); 
+      }
+    }
     wait(20, msec);
   }
 }
