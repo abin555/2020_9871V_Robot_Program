@@ -19,20 +19,23 @@
 // rampMotor            motor         10              
 // rightIntakeSwitch    limit         A               
 // leftIntakeSwitch     limit         B               
+// Drivetrain           drivetrain    4, 5            
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include <autonomous.h>
 
 using namespace vex;
 competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 controller::lcd screen = Controller1.Screen;
+Autonomous auton;
 
 void pre_auton(void){//Pre_auton setup
-
+  
 }
 void autonomous(void){//Autonomous
-
+  auton.Drive(true,20);
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
