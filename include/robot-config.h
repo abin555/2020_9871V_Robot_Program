@@ -12,6 +12,10 @@ extern motor leftMotor;
 extern motor rampMotor;
 extern limit rightIntakeSwitch;
 extern limit leftIntakeSwitch;
+extern accelerometer accelX;
+extern accelerometer accelY;
+extern accelerometer accelZ;
+extern gyro Gyro;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

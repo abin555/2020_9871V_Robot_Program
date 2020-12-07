@@ -19,6 +19,10 @@
 // rampMotor            motor         10              
 // rightIntakeSwitch    limit         A               
 // leftIntakeSwitch     limit         B               
+// accelX               accelerometer C               
+// accelY               accelerometer D               
+// accelZ               accelerometer E               
+// Gyro                 gyro          F               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -30,9 +34,9 @@ competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 controller::lcd screen = Controller1.Screen;
 Autonomous auton;
+Position pos;
 
 void pre_auton(void){//Pre_auton setup
-  
 }
 void autonomous(void){//Autonomous
   auton.Drive(true,20);
@@ -104,11 +108,16 @@ void OperateIntakes(void){//Run and operate the intakes
     }
   }
 }
+void UpdatePosition(){
+  pos.Heading = Gyro.heading(degrees);
+}
+
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
   ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update the screen
   while(true){//Start the system loop
+    UpdatePosition();
     if(!Breaks){//If not breaked, drive
       Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
     }
@@ -201,6 +210,7 @@ void usercontrol(void){//User control state
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+  Gyro.calibrate(1);
   Competition.drivercontrol(usercontrol);
   Competition.autonomous(autonomous);
   pre_auton();

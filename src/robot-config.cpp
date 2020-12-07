@@ -17,6 +17,10 @@ motor leftMotor = motor(PORT11, ratio18_1, false);
 motor rampMotor = motor(PORT10, ratio18_1, false);
 limit rightIntakeSwitch = limit(Brain.ThreeWirePort.A);
 limit leftIntakeSwitch = limit(Brain.ThreeWirePort.B);
+accelerometer accelX = accelerometer(Brain.ThreeWirePort.C);
+accelerometer accelY = accelerometer(Brain.ThreeWirePort.D);
+accelerometer accelZ = accelerometer(Brain.ThreeWirePort.E);
+gyro Gyro = gyro(Brain.ThreeWirePort.F);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

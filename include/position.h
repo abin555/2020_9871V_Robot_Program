@@ -7,4 +7,5 @@ class Position{
   float yacc;
   float zacc;
   void ZeroInertialSystem();
+  float Heading;
 };

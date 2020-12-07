@@ -3,7 +3,7 @@
 
 class Autonomous{
   private:
-  drivetrain Drivetrain = drivetrain(leftMotor, rightMotor, 319.19, 295, 40, mm, 1);
+  smartdrive Drivetrain = smartdrive(leftMotor, rightMotor, Gyro, 319.19, 320, 40, mm, 1);
   motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
   public:
     void Turn(bool direction, float degreees);
@@ -15,10 +15,10 @@ class Autonomous{
 };
 
 void Autonomous::Turn(bool direction, float degrees){
-  
+  Drivetrain.turnFor(degrees, rotationUnits::deg,true);
 }
 float Autonomous::GetHeading(){
-  return 0.0f;
+  return Gyro.heading(degrees);
 }
 void Autonomous::Drive(bool direction, float length){
   if(direction){
