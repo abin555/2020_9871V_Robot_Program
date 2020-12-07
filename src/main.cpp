@@ -160,22 +160,22 @@ void usercontrol(void){//User control state
       }
     }
     if(Controller1.ButtonL1.pressing()){//Increase the drive speed
-      speed_mod += 0.5;
+      speed_mod += 0.05;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
     if(Controller1.ButtonL2.pressing()){//Decrease the drive speed
-      speed_mod -= 0.5;
+      speed_mod -= 0.05;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
     if(Controller1.ButtonR1.pressing()){//Increase the elevator speed
-      elevator_mod += 0.5;
+      elevator_mod += 0.05;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
     if(Controller1.ButtonR2.pressing()){//Decrease the elevator speed
-      elevator_mod -= 0.5;
+      elevator_mod -= 0.05;
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
