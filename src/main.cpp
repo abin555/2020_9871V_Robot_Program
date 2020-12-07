@@ -129,6 +129,9 @@ void usercontrol(void){//User control state
           Elevator.spin(reverse,elevator_mod,velocityUnits::pct);
         }
       }
+      else{
+        Elevator.stop();
+      }
     }
     if(Controller1.ButtonB.pressing()){//Switch elevator direction
       elevatordir = !elevatordir;
