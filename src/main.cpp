@@ -19,11 +19,11 @@
 // rampMotor            motor         10              
 // rightIntakeSwitch    limit         A               
 // leftIntakeSwitch     limit         B               
-// Drivetrain           drivetrain    4, 5            
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
 #include <autonomous.h>
+#include <position.h>
 
 using namespace vex;
 competition Competition;

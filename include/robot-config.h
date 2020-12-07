@@ -12,7 +12,6 @@ extern motor leftMotor;
 extern motor rampMotor;
 extern limit rightIntakeSwitch;
 extern limit leftIntakeSwitch;
-extern drivetrain Drivetrain;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

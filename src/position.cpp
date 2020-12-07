@@ -8,3 +8,7 @@ class Position{
   float zacc = 0;
   void ZeroInertialSystem();
 };
+
+void Position::ZeroInertialSystem(){
+  
+}
