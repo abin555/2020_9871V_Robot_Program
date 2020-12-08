@@ -53,10 +53,10 @@ void autonomous(void){//Autonomous
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
 float speed_mod = 0.75; 
-float elevator_mod = 100;
+float elevator_mod = 1;
 bool Intakes = false;
 bool elevator = false;
-bool elevatormode = false;
+bool elevatormode = true;
 bool elevatordir = false;
 bool IntakeCall = false;
 
@@ -67,7 +67,7 @@ void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool Int
   else{screen.print("Intakes Stopped | ");}
   screen.setCursor(2,0);
   screen.print("Drive Speed: ");
-  screen.print(Speed);
+  screen.print(Speed*100);
   screen.setCursor(3,0);
   if(Breaks){screen.print("Breaks ON");}
   else{screen.print("Breaks OFF");}
@@ -139,16 +139,16 @@ void usercontrol(void){//User control state
         task::sleep(1);
       }
     }
-    if(elevatormode == false){//If not true, use joystick control
+    if(elevatormode == true){//If not true, use joystick control
       Elevator.spin(forward,elevator_mod*Controller1.Axis2.value(),velocityUnits::pct);
     }
     else{
       if(elevator == true){//If elevator is enabled
         if(elevatordir == false){//Spin forward
-          Elevator.spin(forward,elevator_mod,velocityUnits::pct);
+          Elevator.spin(forward,elevator_mod*100,velocityUnits::pct);
         }
         else{//Spin backwards
-          Elevator.spin(reverse,elevator_mod,velocityUnits::pct);
+          Elevator.spin(reverse,elevator_mod*100,velocityUnits::pct);
         }
       }
       else{
