@@ -58,6 +58,7 @@ bool Intakes = false;
 bool elevator = false;
 bool elevatormode = false;
 bool elevatordir = false;
+bool IntakeCall = false;
 
 void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){//Updates Screen
   screen.clearScreen();
@@ -105,6 +106,17 @@ void OperateIntakes(void){//Run and operate the intakes
     }
   }
 }
+void IntakeToggler(void){
+  if(IntakeCall){
+    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
+      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
+    }
+    else{//pull in
+      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
+    }
+    IntakeCall = false;
+  }
+}
 void UpdatePosition(){
   pos.Heading = Gyro.heading(degrees);
 }
@@ -112,6 +124,7 @@ void UpdatePosition(){
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
+  thread IntakeCaller = thread(IntakeToggler);
   ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update the screen
   while(true){//Start the system loop
     UpdatePosition();
@@ -188,16 +201,17 @@ void usercontrol(void){//User control state
       ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       task::sleep(10);
     }
-    if(Controller1.ButtonDown.pressing()){//Lower the ramp
-      rampMotor.spinToPosition(0,degrees);
-    }
-    if(Controller1.ButtonUp.pressing()){//Raise the ramp
-      rampMotor.spinToPosition(880,degrees);
-    }
     if(Controller1.ButtonLeft.pressing()){//Rezero the Intakes
       ResetIntakes();
       while(Controller1.ButtonLeft.pressing()){
         task::sleep(1); 
+      }
+    }
+    if(Controller1.ButtonUp.pressing()){
+      IntakeCall = true;
+      Intakes = false;
+      while(Controller1.ButtonUp.pressing()){
+        task::sleep(1);
       }
     }
     wait(20, msec);
