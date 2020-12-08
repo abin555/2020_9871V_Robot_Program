@@ -14,7 +14,6 @@ motor leftIntake = motor(PORT2, ratio18_1, true);
 motor Elevator = motor(PORT3, ratio18_1, true);
 motor rightMotor = motor(PORT20, ratio18_1, true);
 motor leftMotor = motor(PORT11, ratio18_1, false);
-motor rampMotor = motor(PORT10, ratio18_1, false);
 limit rightIntakeSwitch = limit(Brain.ThreeWirePort.A);
 limit leftIntakeSwitch = limit(Brain.ThreeWirePort.B);
 accelerometer accelX = accelerometer(Brain.ThreeWirePort.C);

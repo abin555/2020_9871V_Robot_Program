@@ -9,7 +9,6 @@ extern motor leftIntake;
 extern motor Elevator;
 extern motor rightMotor;
 extern motor leftMotor;
-extern motor rampMotor;
 extern limit rightIntakeSwitch;
 extern limit leftIntakeSwitch;
 extern accelerometer accelX;

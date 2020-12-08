@@ -16,7 +16,6 @@
 // Elevator             motor         3               
 // rightMotor           motor         20              
 // leftMotor            motor         11              
-// rampMotor            motor         10              
 // rightIntakeSwitch    limit         A               
 // leftIntakeSwitch     limit         B               
 // accelX               accelerometer C               
@@ -32,13 +31,28 @@
 using namespace vex;
 competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
+motor_group driveM = motor_group(leftMotor,rightMotor);
 controller::lcd screen = Controller1.Screen;
 Autonomous auton;
 Position pos;
 
 void pre_auton(void){/*Pre_auton setup*/}
 
+void ResetIntakes(){//Zero the intake positions
+  while(!rightIntakeSwitch.pressing()){//Unless the right button is pressed, move the intake closer to zero
+    rightIntake.spinFor(reverse,10,degrees);
+  }
+  while(!leftIntakeSwitch.pressing()){//Unless the left button is pressed, move the intake closer to zero
+    leftIntake.spinFor(reverse,10,degrees);
+  }
+  //Set Intake positions to 0 degrees and turns
+  rightIntake.setPosition(0,degrees);
+  rightIntake.setPosition(0,turns);
+  leftIntake.setPosition(0,degrees);
+  leftIntake.setPosition(0,turns);
+}
 void autonomous(void){//Autonomous
+<<<<<<< Updated upstream
   auton.openIntakes();
   auton.Drive(true,20);
   auton.Turn(true,90);
@@ -49,6 +63,29 @@ void autonomous(void){//Autonomous
   auton.closeIntakes();
   task::sleep(2500);
   auton.runElevator(false,true,0);
+=======
+  ResetIntakes();
+  IntakeMotors.spinToPosition(180,degrees);
+  driveM.spin(forward,75,pct);
+  task::sleep(2000);
+  driveM.stop();
+  rightMotor.spin(forward,50,pct);
+  leftMotor.spin(reverse,50,pct);
+  task::sleep(450);
+  rightMotor.stop();
+  leftMotor.stop();
+  driveM.spin(forward,75,pct);
+  task::sleep(750);
+  driveM.stop();
+  while(true){
+    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
+      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
+    }
+    else{//pull in
+      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
+    }
+  }
+>>>>>>> Stashed changes
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
@@ -78,19 +115,6 @@ void Drive(float stick_up, float stick_side, float speed_mod){//Using Arcade Con
   rightMotor.spin(forward, speed_mod*((stick_up - stick_side)/2), velocityUnits::pct);  //speed(up-over)/2
 }
 
-void ResetIntakes(){//Zero the intake positions
-  while(!rightIntakeSwitch.pressing()){//Unless the right button is pressed, move the intake closer to zero
-    rightIntake.spinFor(reverse,10,degrees);
-  }
-  while(!leftIntakeSwitch.pressing()){//Unless the left button is pressed, move the intake closer to zero
-    leftIntake.spinFor(reverse,10,degrees);
-  }
-  //Set Intake positions to 0 degrees and turns
-  rightIntake.setPosition(0,degrees);
-  rightIntake.setPosition(0,turns);
-  leftIntake.setPosition(0,degrees);
-  leftIntake.setPosition(0,turns);
-}
 void OperateIntakes(void){//Run and operate the intakes
   while(true){
     if(Intakes){//If intakes active, spin forward and back
@@ -100,11 +124,13 @@ void OperateIntakes(void){//Run and operate the intakes
       else{//pull in
         IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
       }
+      Intakes = false;
     }
     else{
       IntakeMotors.stop(hold);//Stopping intakes when not active.
     }
   }
+<<<<<<< Updated upstream
 }
 void IntakeToggler(void){
   if(IntakeCall){
@@ -116,6 +142,8 @@ void IntakeToggler(void){
     }
     IntakeCall = false;
   }
+=======
+>>>>>>> Stashed changes
 }
 void UpdatePosition(){
   pos.Heading = Gyro.heading(degrees);
@@ -175,10 +203,9 @@ void usercontrol(void){//User control state
     }
 
     if(Controller1.ButtonX.pressing()){//Toggle the intakes
-      Intakes = !Intakes;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      Intakes = true;
       while(Controller1.ButtonX.pressing()){
-       task::sleep(1);
+        task::sleep(1);
       }
     }
     if(Controller1.ButtonL1.pressing()){//Increase the drive speed
@@ -207,6 +234,7 @@ void usercontrol(void){//User control state
         task::sleep(1); 
       }
     }
+<<<<<<< Updated upstream
     if(Controller1.ButtonUp.pressing()){
       IntakeCall = true;
       Intakes = false;
@@ -214,6 +242,8 @@ void usercontrol(void){//User control state
         task::sleep(1);
       }
     }
+=======
+>>>>>>> Stashed changes
     wait(20, msec);
   }
 }
