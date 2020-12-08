@@ -51,22 +51,8 @@ void ResetIntakes(){//Zero the intake positions
   leftIntake.setPosition(0,degrees);
   leftIntake.setPosition(0,turns);
 }
+
 void autonomous(void){//Autonomous
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  auton.openIntakes();
-  auton.Drive(true,20);
-  auton.Turn(true,90);
-  auton.Drive(true,24);
-  auton.Turn(false,90);
-  auton.Drive(true,24);
-  auton.runElevator(true,true,100);
-  auton.closeIntakes();
-  task::sleep(2500);
-  auton.runElevator(false,true,0);
-=======
-=======
->>>>>>> Stashed changes
   ResetIntakes();
   IntakeMotors.spinToPosition(180,degrees);
   driveM.spin(forward,75,pct);
@@ -88,7 +74,6 @@ void autonomous(void){//Autonomous
       IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
     }
   }
->>>>>>> Stashed changes
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
@@ -133,23 +118,6 @@ void OperateIntakes(void){//Run and operate the intakes
       IntakeMotors.stop(hold);//Stopping intakes when not active.
     }
   }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-}
-void IntakeToggler(void){
-  if(IntakeCall){
-    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
-    }
-    else{//pull in
-      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
-    }
-    IntakeCall = false;
-  }
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 }
 void UpdatePosition(){
   pos.Heading = Gyro.heading(degrees);
@@ -158,7 +126,6 @@ void UpdatePosition(){
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
-  thread IntakeCaller = thread(IntakeToggler);
   ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update the screen
   while(true){//Start the system loop
     UpdatePosition();
@@ -209,9 +176,10 @@ void usercontrol(void){//User control state
     }
 
     if(Controller1.ButtonX.pressing()){//Toggle the intakes
-      Intakes = true;
+      Intakes = !Intakes;
+      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
       while(Controller1.ButtonX.pressing()){
-        task::sleep(1);
+       task::sleep(1);
       }
     }
     if(Controller1.ButtonL1.pressing()){//Increase the drive speed
@@ -240,19 +208,6 @@ void usercontrol(void){//User control state
         task::sleep(1); 
       }
     }
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    if(Controller1.ButtonUp.pressing()){
-      IntakeCall = true;
-      Intakes = false;
-      while(Controller1.ButtonUp.pressing()){
-        task::sleep(1);
-      }
-    }
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     wait(20, msec);
   }
 }
