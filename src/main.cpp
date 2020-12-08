@@ -53,6 +53,7 @@ void ResetIntakes(){//Zero the intake positions
 }
 void autonomous(void){//Autonomous
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   auton.openIntakes();
   auton.Drive(true,20);
   auton.Turn(true,90);
@@ -64,6 +65,8 @@ void autonomous(void){//Autonomous
   task::sleep(2500);
   auton.runElevator(false,true,0);
 =======
+=======
+>>>>>>> Stashed changes
   ResetIntakes();
   IntakeMotors.spinToPosition(180,degrees);
   driveM.spin(forward,75,pct);
@@ -131,6 +134,7 @@ void OperateIntakes(void){//Run and operate the intakes
     }
   }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 }
 void IntakeToggler(void){
   if(IntakeCall){
@@ -142,6 +146,8 @@ void IntakeToggler(void){
     }
     IntakeCall = false;
   }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 }
@@ -235,6 +241,7 @@ void usercontrol(void){//User control state
       }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     if(Controller1.ButtonUp.pressing()){
       IntakeCall = true;
       Intakes = false;
@@ -242,6 +249,8 @@ void usercontrol(void){//User control state
         task::sleep(1);
       }
     }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     wait(20, msec);
