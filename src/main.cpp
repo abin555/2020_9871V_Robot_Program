@@ -36,10 +36,19 @@ controller::lcd screen = Controller1.Screen;
 Autonomous auton;
 Position pos;
 
-void pre_auton(void){//Pre_auton setup
-}
+void pre_auton(void){/*Pre_auton setup*/}
+
 void autonomous(void){//Autonomous
+  auton.openIntakes();
   auton.Drive(true,20);
+  auton.Turn(true,90);
+  auton.Drive(true,24);
+  auton.Turn(false,90);
+  auton.Drive(true,24);
+  auton.runElevator(true,true,100);
+  auton.closeIntakes();
+  task::sleep(2500);
+  auton.runElevator(false,true,0);
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
@@ -51,28 +60,16 @@ bool elevatormode = false;
 bool elevatordir = false;
 
 void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){//Updates Screen
-  //screen.clearScreen();//clear screen
-  screen.setCursor(0,0);//set cursor
-  //Drive System Status
-  if(Breaks){
-    screen.print("Stop ");
-  }
-  else{
-    screen.print("Free ");
-  }
-  screen.setCursor(5,0);
-  screen.print(Speed*100);//Print drive speed %
-  //Intake System Status
-  screen.setCursor(0,1);
-  if(IntakeSet){
-    screen.print("Intakes running");
-  }
-  else{
-    screen.print("Intakes stopped");
-  }
-  //Elevator System
-  screen.setCursor(0,2);
-  screen.print(elevator*100);
+  screen.clearScreen();
+  screen.setCursor(1,0);
+  if(Intakes){screen.print("Intakes Rolling | ");}
+  else{screen.print("Intakes Stopped | ");}
+  screen.setCursor(2,0);
+  screen.print("Drive Speed: ");
+  screen.print(Speed);
+  screen.setCursor(3,0);
+  if(Breaks){screen.print("Breaks ON");}
+  else{screen.print("Breaks OFF");}
 }
 
 void Drive(float stick_up, float stick_side, float speed_mod){//Using Arcade Control

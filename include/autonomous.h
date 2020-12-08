@@ -6,7 +6,7 @@ class Autonomous{
     void Turn(bool direction, float degreees);
     float GetHeading();
     void Drive(bool direction, float length);
-    void OpenIntakes();
-    void CloseIntakes();
-    void runElevator(bool elevator, bool direction, float speed);
+    void openIntakes();
+    void closeIntakes();
+    void runElevator(bool enable, bool direction, float speed);
 };

@@ -9,13 +9,18 @@ class Autonomous{
     void Turn(bool direction, float degreees);
     float GetHeading();
     void Drive(bool direction, float length);
-    void OpenIntakes();
-    void CloseIntakes();
+    void openIntakes();
+    void closeIntakes();
     void runElevator(bool elevator, bool direction, float speed);
 };
 
 void Autonomous::Turn(bool direction, float degrees){
-  Drivetrain.turnFor(degrees, rotationUnits::deg,true);
+  if(direction){
+    Drivetrain.turnFor(degrees, rotationUnits::deg,true);
+  }
+  else{
+    Drivetrain.turnFor(-degrees, rotationUnits::deg,true);
+  }
 }
 float Autonomous::GetHeading(){
   return Gyro.heading(degrees);
@@ -28,13 +33,23 @@ void Autonomous::Drive(bool direction, float length){
     Drivetrain.driveFor(reverse,length,distanceUnits::in);
   }
 }
-void Autonomous::OpenIntakes(){
+void Autonomous::openIntakes(){
   IntakeMotors.spinToPosition(180,degrees);
 }
-void Autonomous::CloseIntakes(){
+void Autonomous::closeIntakes(){
   IntakeMotors.spinToPosition(0,degrees);
 }
-void Autonomous::runElevator(bool elevator, bool direction, float speed){
-
+void Autonomous::runElevator(bool enable, bool direction, float speed){
+  if(enable){
+    if(direction){
+      Elevator.spin(forward,speed,pct);
+    }
+    else{
+      Elevator.spin(reverse,speed,pct);
+    }
+  }
+  else{
+    Elevator.stop();
+  }
 }
 
