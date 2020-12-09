@@ -27,12 +27,12 @@
 #include "vex.h"
 #include <autonomous.h>
 #include <position.h>
+#define screen Controller1.Screen
 
 using namespace vex;
 competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 motor_group driveM = motor_group(leftMotor,rightMotor);
-controller::lcd screen = Controller1.Screen;
 Autonomous auton;
 Position pos;
 
@@ -215,7 +215,6 @@ void usercontrol(void){//User control state
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-  Gyro.calibrate(1);
   Competition.drivercontrol(usercontrol);
   Competition.autonomous(autonomous);
   pre_auton();
