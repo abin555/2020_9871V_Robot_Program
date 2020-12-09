@@ -25,15 +25,13 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
-#include <autonomous.h>
 #include <position.h>
 
 using namespace vex;
 competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 motor_group driveM = motor_group(leftMotor,rightMotor);
-controller::lcd screen = Controller1.Screen;
-Autonomous auton;
+#define screen Controller1.Screen
 Position pos;
 
 void pre_auton(void){/*Pre_auton setup*/}
@@ -51,6 +49,20 @@ void ResetIntakes(){//Zero the intake positions
   leftIntake.setPosition(0,degrees);
   leftIntake.setPosition(0,turns);
 }
+void AutonomousIntakes(){
+  while(true){
+    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
+      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
+    }
+    else{//pull in
+      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
+    }
+    if(leftIntakeSwitch.pressing() != rightIntakeSwitch.pressing()){
+      IntakeMotors.stop();
+      IntakeMotors.spinToPosition(180,degrees);
+    }
+  }
+}
 
 void autonomous(void){//Autonomous
   ResetIntakes();
@@ -66,14 +78,7 @@ void autonomous(void){//Autonomous
   driveM.spin(forward,75,pct);
   task::sleep(750);
   driveM.stop();
-  while(true){
-    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
-    }
-    else{//pull in
-      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
-    }
-  }
+  thread AutoIntakes = thread(AutonomousIntakes);
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
