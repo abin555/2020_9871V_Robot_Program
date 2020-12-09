@@ -39,4 +39,5 @@ class Position{
   void ZeroInertialSystem();
   float Heading;
   void UpdateSystem();
+  void Calibrate();
 };

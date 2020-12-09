@@ -57,10 +57,6 @@ void AutonomousIntakes(){
     else{//pull in
       IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
     }
-    if(leftIntakeSwitch.pressing() != rightIntakeSwitch.pressing()){
-      IntakeMotors.stop();
-      IntakeMotors.spinToPosition(180,degrees);
-    }
   }
 }
 
@@ -79,6 +75,14 @@ void autonomous(void){//Autonomous
   task::sleep(750);
   driveM.stop();
   thread AutoIntakes = thread(AutonomousIntakes);
+  while(true){
+    if(leftIntakeSwitch.pressing() != rightIntakeSwitch.pressing()){
+      AutoIntakes.interrupt();
+      IntakeMotors.stop();
+      IntakeMotors.spinToPosition(180,degrees);
+      AutoIntakes = thread(AutonomousIntakes);
+    }
+  }
 }
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
@@ -128,19 +132,52 @@ void UpdatePosition(){
   pos.Heading = Gyro.heading(degrees);
 }
 
+void DisplayPosition(){
+  float x = pos.location.getX();
+  float y = pos.location.getY();
+  float z = pos.location.getZ();
+
+  screen.clearScreen();
+  screen.setCursor(0,0);
+  screen.print(x);
+  screen.print(" | ");
+  screen.print(y);
+  screen.print(" | ");
+  screen.print(z);
+}
+bool LocationDisplay = false;
+int ScreenUpdate = 0;
+void DisplaySwitcher(){
+  if(ScreenUpdate == 5){
+      if(LocationDisplay){
+      DisplayPosition();
+    }
+    else{
+      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+    }
+    ScreenUpdate = 0;
+  }
+  else{
+    ScreenUpdate++;
+  }
+}
+
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
-  ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update the screen
+  DisplaySwitcher();//Update the screen
   while(true){//Start the system loop
+    pos.UpdateSystem();
     UpdatePosition();
+    DisplaySwitcher();
+
     if(!Breaks){//If not breaked, drive
       Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
     }
     //OperateIntakes();
     if(Controller1.ButtonA.pressing()){//Toggle breaks 
       Breaks = !Breaks;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       while(Controller1.ButtonA.pressing()){//Do nothing until A is released
         task::sleep(1);
       }
@@ -182,29 +219,29 @@ void usercontrol(void){//User control state
 
     if(Controller1.ButtonX.pressing()){//Toggle the intakes
       Intakes = !Intakes;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       while(Controller1.ButtonX.pressing()){
        task::sleep(1);
       }
     }
     if(Controller1.ButtonL1.pressing()){//Increase the drive speed
       speed_mod += 0.05;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonL2.pressing()){//Decrease the drive speed
       speed_mod -= 0.05;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonR1.pressing()){//Increase the elevator speed
       elevator_mod += 0.05;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonR2.pressing()){//Decrease the elevator speed
       elevator_mod -= 0.05;
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonLeft.pressing()){//Rezero the Intakes
@@ -213,7 +250,7 @@ void usercontrol(void){//User control state
         task::sleep(1); 
       }
     }
-    wait(20, msec);
+    wait(50, msec);
   }
 }
 
