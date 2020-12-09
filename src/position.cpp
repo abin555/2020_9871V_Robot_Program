@@ -33,6 +33,9 @@ class Position{
     float getZ();
     void Update(float x, float y, float z);
   };
+  Location location;
+  Velocity velocity;
+  Acceleration acceleration;
   void ZeroInertialSystem();
   float Heading;
   void UpdateSystem();
@@ -89,5 +92,14 @@ void Position::ZeroInertialSystem(){
   Gyro.setHeading(0,degrees);
 }
 void Position::UpdateSystem(){
-
+  Position::acceleration.x = accelX.acceleration();
+  Position::acceleration.y = accelY.acceleration();
+  Position::acceleration.z = accelZ.acceleration();
+  Position::velocity.x = Position::velocity.x + Position::acceleration.x;
+  Position::velocity.y = Position::velocity.y + Position::acceleration.y;
+  Position::velocity.z = Position::velocity.z + Position::acceleration.z;
+  Position::location.x = Position::location.x + Position::velocity.x;
+  Position::location.y = Position::location.y + Position::velocity.y;
+  Position::location.z = Position::location.z + Position::velocity.z;
+  
 }

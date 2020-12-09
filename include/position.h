@@ -33,6 +33,9 @@ class Position{
     float getZ();
     void Update(float x, float y, float z);
   };
+  Location location;
+  Velocity velocity;
+  Acceleration acceleration;
   void ZeroInertialSystem();
   float Heading;
   void UpdateSystem();
