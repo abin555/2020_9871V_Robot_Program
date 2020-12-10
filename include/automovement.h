@@ -5,7 +5,7 @@
 class autoMovement{
   public:
 
-  void TurnRight();
-  void TurnLeft();
+  void TurnRight(float degrees,float speed);
+  void TurnLeft(float degrees,float speed);
   void DriveForward();
 };

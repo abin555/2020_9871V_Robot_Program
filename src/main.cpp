@@ -1,3 +1,36 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// rightIntake          motor         1               
+// leftIntake           motor         2               
+// Elevator             motor         3               
+// rightMotor           motor         20              
+// leftMotor            motor         11              
+// rightIntakeSwitch    limit         A               
+// leftIntakeSwitch     limit         B               
+// accelX               accelerometer C               
+// accelY               accelerometer D               
+// accelZ               accelerometer E               
+// Gyro                 gyro          F               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// rightIntake          motor         1               
+// leftIntake           motor         2               
+// Elevator             motor         3               
+// rightMotor           motor         20              
+// leftMotor            motor         11              
+// rightIntakeSwitch    limit         A               
+// leftIntakeSwitch     limit         B               
+// accelX               accelerometer C               
+// accelY               accelerometer D               
+// accelZ               accelerometer E               
+// Gyro                 gyro          F               
+// Expander4            triport       4               
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -254,12 +287,42 @@ void usercontrol(void){//User control state
   }
 }
 
+void SystemsTest(){
+  Gyro.calibrate();
+  waitUntil(!Gyro.isCalibrating());
+  Gyro.setHeading(0,degrees);
+  task::sleep(2000);
+
+  leftMotor.spin(forward,25,pct);
+  rightMotor.spin(reverse,25,pct);
+  waitUntil(Gyro.heading(degrees) > 90);
+
+  leftMotor.stop();
+  rightMotor.stop();
+
+  while(true){
+    task::sleep(250);
+    pos.UpdateSystem();
+    screen.clearScreen();
+    screen.setCursor(0,0);
+    screen.print(Gyro.heading(degrees));
+    screen.newLine();
+    screen.print(pos.location.x);
+    screen.print("|");
+    screen.print(pos.location.y);
+    screen.print("|");
+    screen.print(pos.location.y);
+    screen.print("|");
+  }
+}
+
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
   Gyro.calibrate(1);
   Competition.drivercontrol(usercontrol);
-  Competition.autonomous(autonomous);
+  //Competition.autonomous(autonomous);
+  Competition.autonomous(SystemsTest);
   pre_auton();
   while (true) {
     wait(100, msec);
