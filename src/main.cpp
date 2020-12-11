@@ -1,36 +1,3 @@
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// rightIntake          motor         1               
-// leftIntake           motor         2               
-// Elevator             motor         3               
-// rightMotor           motor         20              
-// leftMotor            motor         11              
-// rightIntakeSwitch    limit         A               
-// leftIntakeSwitch     limit         B               
-// accelX               accelerometer C               
-// accelY               accelerometer D               
-// accelZ               accelerometer E               
-// Gyro                 gyro          F               
-// ---- END VEXCODE CONFIGURED DEVICES ----
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// rightIntake          motor         1               
-// leftIntake           motor         2               
-// Elevator             motor         3               
-// rightMotor           motor         20              
-// leftMotor            motor         11              
-// rightIntakeSwitch    limit         A               
-// leftIntakeSwitch     limit         B               
-// accelX               accelerometer C               
-// accelY               accelerometer D               
-// accelZ               accelerometer E               
-// Gyro                 gyro          F               
-// Expander4            triport       4               
-// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -90,6 +57,17 @@ void AutonomousIntakes(){
     else{//pull in
       IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
     }
+  }
+}
+#define wheelDiameter = 2;
+
+void OdometrySystem(){
+  while(true){
+    float LEncoder = leftMotor.position(degrees);
+    float REncoder = rightMotor.position(degrees);
+    float Heading = Gyro.heading(degrees);
+    float cycledistanceRight = 0;
+    float cycledistanceLeft;
   }
 }
 
@@ -291,27 +269,27 @@ void SystemsTest(){
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
   Gyro.setHeading(0,degrees);
-  task::sleep(2000);
+  //task::sleep(2000);
 
-  leftMotor.spin(forward,25,pct);
-  rightMotor.spin(reverse,25,pct);
-  waitUntil(Gyro.heading(degrees) > 90);
+  //leftMotor.spin(forward,25,pct);
+  //rightMotor.spin(reverse,25,pct);
+  //waitUntil(Gyro.heading(degrees) > 90);
 
-  leftMotor.stop();
-  rightMotor.stop();
+  //leftMotor.stop();
+  //rightMotor.stop();
 
   while(true){
     task::sleep(250);
-    pos.UpdateSystem();
+    //pos.UpdateSystem();
     screen.clearScreen();
     screen.setCursor(0,0);
     screen.print(Gyro.heading(degrees));
     screen.newLine();
-    screen.print(pos.location.x);
+    screen.print(accelX.acceleration());
     screen.print("|");
-    screen.print(pos.location.y);
+    screen.print(accelY.acceleration());
     screen.print("|");
-    screen.print(pos.location.y);
+    screen.print(accelZ.acceleration());
     screen.print("|");
   }
 }
