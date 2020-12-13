@@ -20,6 +20,7 @@ accelerometer accelX = accelerometer(Brain.ThreeWirePort.C);
 accelerometer accelY = accelerometer(Brain.ThreeWirePort.D);
 accelerometer accelZ = accelerometer(Brain.ThreeWirePort.E);
 gyro Gyro = gyro(Brain.ThreeWirePort.F);
+encoder OdometryEncoder = encoder(Brain.ThreeWirePort.G);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

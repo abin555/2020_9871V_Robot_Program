@@ -1,6 +1,6 @@
 #include "vex.h"
 #include "robot-config.h"
-
+#pragma once
 class Position{
   public:
   struct Location{
@@ -36,8 +36,6 @@ class Position{
   Location location;
   Velocity velocity;
   Acceleration acceleration;
-  void ZeroInertialSystem();
   float Heading;
-  void UpdateSystem();
   void Calibrate();
 };

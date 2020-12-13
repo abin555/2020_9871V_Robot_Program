@@ -15,6 +15,7 @@ extern accelerometer accelX;
 extern accelerometer accelY;
 extern accelerometer accelZ;
 extern gyro Gyro;
+extern encoder OdometryEncoder;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

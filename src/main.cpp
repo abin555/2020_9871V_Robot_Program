@@ -1,3 +1,20 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// rightIntake          motor         1               
+// leftIntake           motor         2               
+// Elevator             motor         3               
+// rightMotor           motor         20              
+// leftMotor            motor         11              
+// rightIntakeSwitch    limit         A               
+// leftIntakeSwitch     limit         B               
+// accelX               accelerometer C               
+// accelY               accelerometer D               
+// accelZ               accelerometer E               
+// Gyro                 gyro          F               
+// OdometryEncoder      encoder       G, H            
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -25,6 +42,7 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include "math.h"
 #include <position.h>
 
 using namespace vex;
@@ -32,6 +50,7 @@ competition Competition;
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 motor_group driveM = motor_group(leftMotor,rightMotor);
 #define screen Controller1.Screen
+#define $PI 3.141592653589
 Position pos;
 
 void pre_auton(void){/*Pre_auton setup*/}
@@ -59,19 +78,62 @@ void AutonomousIntakes(){
     }
   }
 }
-#define wheelDiameter = 2;
 
+
+int wheelDiameter = 2;
+float prevDistance = 0;
 void OdometrySystem(){
   while(true){
-    float LEncoder = leftMotor.position(degrees);
-    float REncoder = rightMotor.position(degrees);
-    float Heading = Gyro.heading(degrees);
-    float cycledistanceRight = 0;
-    float cycledistanceLeft;
+    float Encoder = OdometryEncoder.position(degrees);
+    float Distance = Encoder*(wheelDiameter * $PI);
+    float ΔDistance = Distance - prevDistance;
+    float heading = Gyro.heading(degrees);
+    float tempheading = 0;
+    float ΔX = 0;
+    float ΔY = 0;
+    
+    if(heading < 90 && heading > 0){
+      ΔX = sin(heading)*ΔDistance;
+      ΔY = cos(heading)*ΔDistance;
+    }
+    else if(heading > 90 && heading < 180){
+      tempheading = heading - 90;
+      ΔX = cos(tempheading)*ΔDistance;
+      ΔY = -sin(tempheading)*ΔDistance;
+    }
+    else if(heading > 180 && heading < 270){
+      tempheading = heading -180;
+      ΔX = -sin(tempheading)*ΔDistance;
+      ΔY = -cos(tempheading)*ΔDistance;
+    }
+    else if(heading > 270 && heading < 0){
+      tempheading = heading - 270;
+      ΔX = -cos(tempheading)*ΔDistance;
+      ΔY = sin(tempheading)*ΔDistance;
+    }
+    else if(heading == 0){// Y
+      ΔX = 0;
+      ΔY = ΔDistance;
+    }
+    else if(heading == 90){// X
+      ΔX = ΔDistance;
+      ΔY = 0;
+    }
+    else if(heading == 180){// -Y
+      ΔX = 0;
+      ΔY = -ΔDistance;
+    }
+    else if(heading == 270){// -X
+      ΔX = -ΔDistance;
+      ΔY = 0;
+    }
+    pos.location.Update(pos.location.getX() + ΔX, pos.location.getY() + ΔY, pos.location.getZ());
+    prevDistance = Distance;
   }
 }
 
 void autonomous(void){//Autonomous
+  thread Odometry = thread(OdometrySystem);
   ResetIntakes();
   IntakeMotors.spinToPosition(180,degrees);
   driveM.spin(forward,75,pct);
@@ -156,7 +218,7 @@ void DisplayPosition(){
   screen.print(" | ");
   screen.print(z);
 }
-bool LocationDisplay = false;
+bool LocationDisplay = true;
 int ScreenUpdate = 0;
 void DisplaySwitcher(){
   if(ScreenUpdate == 5){
@@ -176,9 +238,9 @@ void DisplaySwitcher(){
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
+  thread Odometry = thread(OdometrySystem);
   DisplaySwitcher();//Update the screen
   while(true){//Start the system loop
-    pos.UpdateSystem();
     UpdatePosition();
     DisplaySwitcher();
 
@@ -269,6 +331,7 @@ void SystemsTest(){
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
   Gyro.setHeading(0,degrees);
+  thread Odometry = thread(OdometrySystem);
   //task::sleep(2000);
 
   //leftMotor.spin(forward,25,pct);
@@ -278,6 +341,7 @@ void SystemsTest(){
   //leftMotor.stop();
   //rightMotor.stop();
 
+
   while(true){
     task::sleep(250);
     //pos.UpdateSystem();
@@ -285,12 +349,11 @@ void SystemsTest(){
     screen.setCursor(0,0);
     screen.print(Gyro.heading(degrees));
     screen.newLine();
-    screen.print(accelX.acceleration());
+    screen.print(pos.location.getX());
     screen.print("|");
-    screen.print(accelY.acceleration());
+    screen.print(pos.location.getY());
     screen.print("|");
-    screen.print(accelZ.acceleration());
-    screen.print("|");
+    screen.print(pos.location.getZ());
   }
 }
 
