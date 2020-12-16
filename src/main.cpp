@@ -80,11 +80,11 @@ void AutonomousIntakes(){
 }
 
 
-int wheelDiameter = 2;
+double wheelDiameter = 2.75;
 float prevDistance = 0;
 void OdometrySystem(){
   while(true){
-    float Encoder = OdometryEncoder.position(degrees);
+    float Encoder = OdometryEncoder.position(rev);
     float Distance = Encoder*(wheelDiameter * $PI);
     float ΔDistance = Distance - prevDistance;
     float heading = Gyro.heading(degrees);
@@ -106,7 +106,7 @@ void OdometrySystem(){
       ΔX = -sin(tempheading)*ΔDistance;
       ΔY = -cos(tempheading)*ΔDistance;
     }
-    else if(heading > 270 && heading < 0){
+    else if(heading > 270 && heading < 360){
       tempheading = heading - 270;
       ΔX = -cos(tempheading)*ΔDistance;
       ΔY = sin(tempheading)*ΔDistance;
@@ -218,31 +218,33 @@ void DisplayPosition(){
   screen.print(" | ");
   screen.print(z);
 }
-bool LocationDisplay = true;
+bool LocationDisplay = false;
 int ScreenUpdate = 0;
 void DisplaySwitcher(){
-  if(ScreenUpdate == 5){
+  while(true){
+    if(ScreenUpdate == 5){
       if(LocationDisplay){
-      DisplayPosition();
+        DisplayPosition();
+      }
+      else{
+        ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      }
+      ScreenUpdate = 0;
     }
     else{
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);
+      ScreenUpdate++;
     }
-    ScreenUpdate = 0;
-  }
-  else{
-    ScreenUpdate++;
   }
 }
 
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
   thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
-  thread Odometry = thread(OdometrySystem);
-  DisplaySwitcher();//Update the screen
+  //thread Odometry = thread(OdometrySystem);
+  //DisplaySwitcher();//Update the screen
+  thread Display = thread(DisplaySwitcher);
   while(true){//Start the system loop
     UpdatePosition();
-    DisplaySwitcher();
 
     if(!Breaks){//If not breaked, drive
       Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
@@ -250,7 +252,6 @@ void usercontrol(void){//User control state
     //OperateIntakes();
     if(Controller1.ButtonA.pressing()){//Toggle breaks 
       Breaks = !Breaks;
-      DisplaySwitcher();
       while(Controller1.ButtonA.pressing()){//Do nothing until A is released
         task::sleep(1);
       }
@@ -292,29 +293,24 @@ void usercontrol(void){//User control state
 
     if(Controller1.ButtonX.pressing()){//Toggle the intakes
       Intakes = !Intakes;
-      DisplaySwitcher();
       while(Controller1.ButtonX.pressing()){
        task::sleep(1);
       }
     }
     if(Controller1.ButtonL1.pressing()){//Increase the drive speed
       speed_mod += 0.05;
-      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonL2.pressing()){//Decrease the drive speed
       speed_mod -= 0.05;
-      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonR1.pressing()){//Increase the elevator speed
       elevator_mod += 0.05;
-      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonR2.pressing()){//Decrease the elevator speed
       elevator_mod -= 0.05;
-      DisplaySwitcher();
       task::sleep(10);
     }
     if(Controller1.ButtonLeft.pressing()){//Rezero the Intakes
@@ -323,7 +319,7 @@ void usercontrol(void){//User control state
         task::sleep(1); 
       }
     }
-    wait(50, msec);
+    //wait(50, msec);
   }
 }
 
@@ -360,6 +356,8 @@ void SystemsTest(){
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+  leftIntake.setMaxTorque(100,pct);
+  rightIntake.setMaxTorque(100,pct);
   Gyro.calibrate(1);
   Competition.drivercontrol(usercontrol);
   //Competition.autonomous(autonomous);
