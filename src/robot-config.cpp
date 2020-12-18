@@ -18,8 +18,7 @@ limit rightIntakeSwitch = limit(Brain.ThreeWirePort.A);
 limit leftIntakeSwitch = limit(Brain.ThreeWirePort.B);
 accelerometer accelX = accelerometer(Brain.ThreeWirePort.C);
 accelerometer accelY = accelerometer(Brain.ThreeWirePort.D);
-accelerometer accelZ = accelerometer(Brain.ThreeWirePort.E);
-gyro Gyro = gyro(Brain.ThreeWirePort.F);
+gyro Gyro = gyro(Brain.ThreeWirePort.E);
 encoder OdometryEncoder = encoder(Brain.ThreeWirePort.G);
 
 // VEXcode generated functions

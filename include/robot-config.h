@@ -13,7 +13,6 @@ extern limit rightIntakeSwitch;
 extern limit leftIntakeSwitch;
 extern accelerometer accelX;
 extern accelerometer accelY;
-extern accelerometer accelZ;
 extern gyro Gyro;
 extern encoder OdometryEncoder;
 

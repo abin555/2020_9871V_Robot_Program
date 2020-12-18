@@ -1,20 +1,3 @@
-// ---- START VEXCODE CONFIGURED DEVICES ----
-// Robot Configuration:
-// [Name]               [Type]        [Port(s)]
-// Controller1          controller                    
-// rightIntake          motor         1               
-// leftIntake           motor         2               
-// Elevator             motor         3               
-// rightMotor           motor         20              
-// leftMotor            motor         11              
-// rightIntakeSwitch    limit         A               
-// leftIntakeSwitch     limit         B               
-// accelX               accelerometer C               
-// accelY               accelerometer D               
-// accelZ               accelerometer E               
-// Gyro                 gyro          F               
-// OdometryEncoder      encoder       G, H            
-// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -23,7 +6,6 @@
 /*    Description:  V5 project                                                */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
-
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
@@ -37,8 +19,8 @@
 // leftIntakeSwitch     limit         B               
 // accelX               accelerometer C               
 // accelY               accelerometer D               
-// accelZ               accelerometer E               
-// Gyro                 gyro          F               
+// Gyro                 gyro          E               
+// OdometryEncoder      encoder       G, H            
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
