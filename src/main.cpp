@@ -80,55 +80,20 @@ void AutonomousIntakes(){
 }
 
 
-double wheelDiameter = 2.75;
+#define wheelDiameter 2.75
 float prevDistance = 0;
+#define odometrystep 200
+double RPMtoRAD(double RPM){
+  return((RPM/60)*2*$PI);
+}
+
 void OdometrySystem(){
   while(true){
-    float Encoder = OdometryEncoder.position(rev);
-    float Distance = Encoder*(wheelDiameter * $PI);
-    float ΔDistance = Distance - prevDistance;
-    float heading = Gyro.heading(degrees);
-    float tempheading = 0;
-    float ΔX = 0;
-    float ΔY = 0;
+    task::sleep(odometrystep);
+    double VelocityLeft = (wheelDiameter/2)*RPMtoRAD(leftMotor.velocity(rpm));
+    double VelocityRight = (wheelDiameter/2)*RPMtoRAD(rightMotor.velocity(rpm));
+    double heading = Gyro.heading(degrees);
     
-    if(heading < 90 && heading > 0){
-      ΔX = sin(heading)*ΔDistance;
-      ΔY = cos(heading)*ΔDistance;
-    }
-    else if(heading > 90 && heading < 180){
-      tempheading = heading - 90;
-      ΔX = cos(tempheading)*ΔDistance;
-      ΔY = -sin(tempheading)*ΔDistance;
-    }
-    else if(heading > 180 && heading < 270){
-      tempheading = heading -180;
-      ΔX = -sin(tempheading)*ΔDistance;
-      ΔY = -cos(tempheading)*ΔDistance;
-    }
-    else if(heading > 270 && heading < 360){
-      tempheading = heading - 270;
-      ΔX = -cos(tempheading)*ΔDistance;
-      ΔY = sin(tempheading)*ΔDistance;
-    }
-    else if(heading == 0){// Y
-      ΔX = 0;
-      ΔY = ΔDistance;
-    }
-    else if(heading == 90){// X
-      ΔX = ΔDistance;
-      ΔY = 0;
-    }
-    else if(heading == 180){// -Y
-      ΔX = 0;
-      ΔY = -ΔDistance;
-    }
-    else if(heading == 270){// -X
-      ΔX = -ΔDistance;
-      ΔY = 0;
-    }
-    pos.location.Update(pos.location.getX() + ΔX, pos.location.getY() + ΔY, pos.location.getZ());
-    prevDistance = Distance;
   }
 }
 
@@ -245,7 +210,7 @@ void usercontrol(void){//User control state
   thread Display = thread(DisplaySwitcher);
   while(true){//Start the system loop
     UpdatePosition();
-
+    leftMotor.velocity(rpm);
     if(!Breaks){//If not breaked, drive
       Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
     }
