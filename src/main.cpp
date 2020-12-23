@@ -26,6 +26,7 @@
 #include "vex.h"
 #include "math.h"
 #include <position.h>
+#include <automovement.h>
 
 using namespace vex;
 competition Competition;
@@ -34,6 +35,7 @@ motor_group driveM = motor_group(leftMotor,rightMotor);
 #define screen Controller1.Screen
 #define $PI 3.141592653589
 Position pos;
+autoMovement move;
 
 void pre_auton(void){/*Pre_auton setup*/}
 
@@ -61,26 +63,7 @@ void AutonomousIntakes(){
   }
 }
 
-
-#define wheelDiameter 2.75
-float prevDistance = 0;
-#define odometrystep 200
-double RPMtoRAD(double RPM){
-  return((RPM/60)*2*$PI);
-}
-
-void OdometrySystem(){
-  while(true){
-    task::sleep(odometrystep);
-    double VelocityLeft = (wheelDiameter/2)*RPMtoRAD(leftMotor.velocity(rpm));
-    double VelocityRight = (wheelDiameter/2)*RPMtoRAD(rightMotor.velocity(rpm));
-    double heading = Gyro.heading(degrees);
-    
-  }
-}
-
-void autonomous(void){//Autonomous
-  thread Odometry = thread(OdometrySystem);
+void autonomousOLD(void){//Autonomous OLD
   ResetIntakes();
   IntakeMotors.spinToPosition(180,degrees);
   driveM.spin(forward,75,pct);
@@ -104,6 +87,20 @@ void autonomous(void){//Autonomous
     }
   }
 }
+
+void autonomous(void){
+  ResetIntakes();
+  move.SetIntakes(100,1000);
+  task::sleep(1500);
+  move.DriveForward(24,20);
+  task::sleep(1500);
+  move.TurnLeft(90,10);
+  task::sleep(1500);
+  move.SetIntakes(50,1000);
+  move.TurnRight(180,10);
+  move.DriveForward(18,20);
+}
+
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
 float speed_mod = 0.75; 
@@ -270,36 +267,6 @@ void usercontrol(void){//User control state
   }
 }
 
-void SystemsTest(){
-  Gyro.calibrate();
-  waitUntil(!Gyro.isCalibrating());
-  Gyro.setHeading(0,degrees);
-  thread Odometry = thread(OdometrySystem);
-  //task::sleep(2000);
-
-  //leftMotor.spin(forward,25,pct);
-  //rightMotor.spin(reverse,25,pct);
-  //waitUntil(Gyro.heading(degrees) > 90);
-
-  //leftMotor.stop();
-  //rightMotor.stop();
-
-
-  while(true){
-    task::sleep(250);
-    //pos.UpdateSystem();
-    screen.clearScreen();
-    screen.setCursor(0,0);
-    screen.print(Gyro.heading(degrees));
-    screen.newLine();
-    screen.print(pos.location.getX());
-    screen.print("|");
-    screen.print(pos.location.getY());
-    screen.print("|");
-    screen.print(pos.location.getZ());
-  }
-}
-
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -308,7 +275,7 @@ int main() {
   Gyro.calibrate(1);
   Competition.drivercontrol(usercontrol);
   //Competition.autonomous(autonomous);
-  Competition.autonomous(SystemsTest);
+  Competition.autonomous(autonomous);
   pre_auton();
   while (true) {
     wait(100, msec);
