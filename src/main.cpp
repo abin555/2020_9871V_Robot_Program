@@ -25,8 +25,7 @@
 
 #include "vex.h"
 #include "math.h"
-#include <position.h>
-#include <automovement.h>
+//#include <automovement.h>
 
 using namespace vex;
 competition Competition;
@@ -34,10 +33,138 @@ motor_group IntakeMotors = motor_group(leftIntake,rightIntake);
 motor_group driveM = motor_group(leftMotor,rightMotor);
 #define screen Controller1.Screen
 #define $PI 3.141592653589
-Position pos;
-autoMovement move;
 
 void pre_auton(void){/*Pre_auton setup*/}
+
+float globalIntakeAngle;
+class autoMovement{
+  float wheelDiameter = 3.0f;
+  motor_group driveMotors = motor_group(leftMotor, rightMotor);
+  motor_group intakeMotors = motor_group(leftIntake,rightIntake);
+  public:
+  void TurnRight(float degrees,float speed);
+  void TurnLeft(float degrees,float speed);
+  void DriveForward(float inches, float speed);
+  void SetIntakes(float percentOpen, int timeout);
+  void UpdatePosition(float Distance);
+  int x = 0;
+  int y = 0;
+};
+
+void autoMovement::UpdatePosition(float Distance){
+  float direction = Gyro.heading(degrees);
+  float angle = 0;
+  float deltaX = 0;
+  float deltaY = 0;
+  int Xdir = 1;//1 = positive X | -1 = negative X
+  int Ydir =  1;//1 = positive Y | -1 = negative Y
+  /*
+                +Y
+                │
+                │
+                │
+                │
+                │
+                │
+ -X ────────────┼──────────── +X
+                │
+                │
+                │
+                │
+                │
+                │
+                -Y
+  */
+  if(direction != 0 && direction != 90 && direction != 180 && direction != 270){
+    if(direction > 0 && direction < 90){
+      angle = direction;
+      Xdir = 1;
+      Ydir = 1;
+    }
+    else if(direction > 90 &&  direction < 180){
+      angle = direction - 90;
+      Xdir = 1;
+      Ydir = -1;
+    }
+    else if(direction > 180 && direction < 270){
+      angle = direction - 180;
+      Xdir = -1;
+      Ydir = -1;
+    }
+    else if(direction > 270 && direction < 360){
+      angle = direction - 270;
+      Xdir = -1;
+      Ydir = 1;
+    }
+    //TODO: Create Trigonometric System!!!
+  }
+  else{
+    if(direction == 0){//+Y
+      autoMovement::y = autoMovement::y + Distance;
+    }
+    else if(direction == 90){//+X
+      autoMovement::x = autoMovement::x + Distance;
+    }
+    else if(direction == 180){//-Y
+      autoMovement::y = autoMovement::y - Distance;
+    }
+    else if(direction == 270){//-X
+      autoMovement::x = autoMovement::x - Distance;
+    }
+  }
+}
+
+void autoMovement::TurnRight(float degrees,float speed){
+  float originalHeading = Gyro.heading(deg);
+  Gyro.setHeading(0,deg);
+  leftMotor.spin(forward,speed*100,pct);
+  rightMotor.spin(reverse,speed*100,pct);
+  waitUntil(Gyro.heading()>=degrees);
+  leftMotor.stop();
+  rightMotor.stop();
+  if(originalHeading+degrees>=360){
+    Gyro.setHeading(originalHeading+degrees-360,deg);
+  }
+  else{
+    Gyro.setHeading(originalHeading+degrees,deg);
+  }
+  task::sleep(500);
+}
+
+void autoMovement::TurnLeft(float degrees, float speed){
+  float originalHeading = Gyro.heading(deg);
+  Gyro.setHeading(0,deg);
+  leftMotor.spin(reverse,speed*100,pct);
+  rightMotor.spin(forward,speed*100,pct);
+  waitUntil(fabs(Gyro.heading(deg)-360)>=degrees);
+  leftMotor.stop();
+  rightMotor.stop();
+  if(originalHeading+degrees>=360){
+    Gyro.setHeading(originalHeading+degrees-360,deg);
+  }
+  else{
+    Gyro.setHeading(originalHeading+degrees,deg);
+  }
+  task::sleep(500);
+}
+
+void autoMovement::DriveForward(float inches, float speed){
+  float targetAngle = inches*360/($PI*wheelDiameter);
+  driveMotors.setPosition(0,deg);
+  driveMotors.setVelocity(speed*100,pct);
+  waitUntil(driveMotors.position(degrees)>=targetAngle);
+  driveMotors.stop();
+  task::sleep(500);
+}
+
+void autoMovement::SetIntakes(float percentOpen,int timeout){
+  globalIntakeAngle = 180*(percentOpen/100);
+  intakeMotors.spinToPosition(globalIntakeAngle,deg);
+  //task::sleep(timeout);
+  //autoIntakes.interrupt();
+}
+autoMovement move;
+
 
 void ResetIntakes(){//Zero the intake positions
   while(!rightIntakeSwitch.pressing()){//Unless the right button is pressed, move the intake closer to zero
@@ -146,21 +273,10 @@ void OperateIntakes(void){//Run and operate the intakes
   }
 }
 void UpdatePosition(){
-  pos.Heading = Gyro.heading(degrees);
 }
 
 void DisplayPosition(){
-  float x = pos.location.getX();
-  float y = pos.location.getY();
-  float z = pos.location.getZ();
-
-  screen.clearScreen();
-  screen.setCursor(0,0);
-  screen.print(x);
-  screen.print(" | ");
-  screen.print(y);
-  screen.print(" | ");
-  screen.print(z);
+  
 }
 bool LocationDisplay = false;
 int ScreenUpdate = 0;
