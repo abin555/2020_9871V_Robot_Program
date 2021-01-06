@@ -96,6 +96,12 @@ void autoMovement::UpdatePosition(float Distance){
       Xdir = -1;
       Ydir = 1;
     }
+    deltaX = sin(angle)*Distance;
+    deltaY = cos(angle)*Distance;
+    deltaX *= Xdir;
+    deltaY *= Ydir;
+    autoMovement::x += deltaX;
+    autoMovement::y += deltaY;
     //TODO: Create Trigonometric System!!!
   }
   else{
