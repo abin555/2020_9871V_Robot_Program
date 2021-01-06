@@ -26,6 +26,11 @@
 #include "vex.h"
 #include "math.h"
 //#include <automovement.h>
+/*
+
+HI Jeffery
+
+*/
 
 using namespace vex;
 competition Competition;
