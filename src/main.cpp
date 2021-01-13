@@ -389,6 +389,14 @@ void usercontrol(void){//User control state
         task::sleep(1); 
       }
     }
+    if(Controller1.ButtonUp.pressing()){
+      IntakeThread.interrupt();
+      IntakeMotors.spinToPosition(180,degrees);
+      IntakeThread = thread(OperateIntakes);
+      while(Controller1.ButtonUp.pressing()){
+        task::sleep(1);
+      }
+    }
     //wait(50, msec);
   }
 }
