@@ -161,8 +161,9 @@ void autoMovement::TurnLeft(float degrees, float speed){
 void autoMovement::DriveForward(float inches, float speed){
   float targetAngle = inches*360/($PI*wheelDiameter);
   driveMotors.setPosition(0,deg);
-  driveMotors.setVelocity(speed*100,pct);
-  waitUntil(driveMotors.position(degrees)>=targetAngle);
+  //driveMotors.setVelocity(speed*100,pct);
+  //waitUntil(driveMotors.position(degrees)>=targetAngle);
+  rightMotor.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
   driveMotors.stop();
   task::sleep(500);
 }
