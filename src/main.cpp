@@ -124,20 +124,15 @@ void autoMovement::UpdatePosition(float Distance){
   }
 }
 
-void autoMovement::TurnRight(float degrees,float speed){
-  float originalHeading = Gyro.heading(deg);
+void autoMovement::TurnRight(float Degrees,float speed){
+  Gyro.calibrate();
+  waitUntil(!Gyro.isCalibrating());
   Gyro.setHeading(0,deg);
-  leftMotor.spin(forward,speed*100,pct);
-  rightMotor.spin(reverse,speed*100,pct);
-  waitUntil(Gyro.heading()>=degrees);
+  leftMotor.spin(reverse,speed,percent);
+  rightMotor.spin(forward,speed,percent);
+  waitUntil(Gyro.heading(degrees) > Degrees);
   leftMotor.stop();
   rightMotor.stop();
-  if(originalHeading+degrees>=360){
-    Gyro.setHeading(originalHeading+degrees-360,deg);
-  }
-  else{
-    Gyro.setHeading(originalHeading+degrees,deg);
-  }
   task::sleep(500);
 }
 
@@ -146,7 +141,7 @@ void autoMovement::TurnLeft(float degrees, float speed){
   Gyro.setHeading(0,deg);
   leftMotor.spin(reverse,speed*100,pct);
   rightMotor.spin(forward,speed*100,pct);
-  waitUntil(fabs(Gyro.heading(deg)-360)>=degrees);
+  waitUntil(fabs(Gyro.heading(deg))>=degrees);
   leftMotor.stop();
   rightMotor.stop();
   if(originalHeading+degrees>=360){
@@ -163,7 +158,9 @@ void autoMovement::DriveForward(float inches, float speed){
   driveMotors.setPosition(0,deg);
   //driveMotors.setVelocity(speed*100,pct);
   //waitUntil(driveMotors.position(degrees)>=targetAngle);
-  rightMotor.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
+  
+  driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
+  //autoMovement::UpdatePosition(inches);
   driveMotors.stop();
   task::sleep(500);
 }
@@ -228,6 +225,7 @@ void autonomousOLD(void){//Autonomous OLD
 
 void autonomous(void){
   ResetIntakes();
+  /*
   move.SetIntakes(100,1000);
   task::sleep(1500);
   move.DriveForward(24,20);
@@ -237,6 +235,10 @@ void autonomous(void){
   move.SetIntakes(50,1000);
   move.TurnRight(180,10);
   move.DriveForward(18,20);
+  */
+  //move.DriveForward(12,20);
+  //move.TurnLeft(90,50);
+  move.TurnRight(90,50);
 }
 
 //System Variables for operating robot. Tells Robot State
