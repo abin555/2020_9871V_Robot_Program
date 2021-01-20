@@ -20,16 +20,10 @@
 // accelX               accelerometer C               
 // accelY               accelerometer D               
 // Gyro                 gyro          E               
-// OdometryEncoder      encoder       G, H            
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
 #include "math.h"
-/*
-
-HI Jeffery
-
-*/
 
 using namespace vex;
 competition Competition;
@@ -130,7 +124,9 @@ void autoMovement::TurnRight(float Degrees,float speed){
   Gyro.setHeading(0,deg);
   leftMotor.spin(reverse,speed,percent);
   rightMotor.spin(forward,speed,percent);
-  waitUntil(Gyro.heading(degrees) > Degrees);
+  while(Gyro.heading(degrees) < Degrees-1 || Gyro.heading(degrees) > Degrees+1){
+    
+  } 
   leftMotor.stop();
   rightMotor.stop();
   task::sleep(500);
