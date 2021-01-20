@@ -156,10 +156,10 @@ void autoMovement::TurnLeft(float degrees, float speed){
 void autoMovement::DriveForward(float inches, float speed){
   float targetAngle = inches*360/($PI*wheelDiameter);
   driveMotors.setPosition(0,deg);
-  //driveMotors.setVelocity(speed*100,pct);
-  //waitUntil(driveMotors.position(degrees)>=targetAngle);
+  driveMotors.setVelocity(speed*100,pct);
+  waitUntil(driveMotors.position(degrees)>=targetAngle);
   
-  driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
+  //driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
   //autoMovement::UpdatePosition(inches);
   driveMotors.stop();
   task::sleep(500);
@@ -236,9 +236,9 @@ void autonomous(void){
   move.TurnRight(180,10);
   move.DriveForward(18,20);
   */
-  //move.DriveForward(12,20);
+  move.DriveForward(12,20);
   //move.TurnLeft(90,50);
-  move.TurnRight(90,50);
+  move.TurnRight(90,25);
 }
 
 //System Variables for operating robot. Tells Robot State
