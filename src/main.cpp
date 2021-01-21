@@ -19,7 +19,8 @@
 // leftIntakeSwitch     limit         B               
 // accelX               accelerometer C               
 // accelY               accelerometer D               
-// Gyro                 gyro          E               
+// GyroOLD              gyro          E               
+// Gyro                 inertial      12              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -119,43 +120,46 @@ void autoMovement::UpdatePosition(float Distance){
 }
 
 void autoMovement::TurnRight(float Degrees,float speed){
-  Gyro.calibrate();
-  waitUntil(!Gyro.isCalibrating());
+  //Gyro.calibrate();
+  //waitUntil(!Gyro.isCalibrating());
   Gyro.setHeading(0,deg);
-  leftMotor.spin(reverse,speed,percent);
-  rightMotor.spin(forward,speed,percent);
+  leftMotor.spin(forward,speed,percent);
+  rightMotor.spin(reverse,speed,percent);
   while(Gyro.heading(degrees) < Degrees-1 || Gyro.heading(degrees) > Degrees+1){
-    
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(0,0);
+    Controller1.Screen.print(Gyro.heading(degrees));
+    Controller1.Screen.setCursor(1,0);
   } 
   leftMotor.stop();
   rightMotor.stop();
   task::sleep(500);
 }
 
-void autoMovement::TurnLeft(float degrees, float speed){
-  float originalHeading = Gyro.heading(deg);
+void autoMovement::TurnLeft(float Degrees, float speed){
+  //Gyro.calibrate();
+  //waitUntil(!Gyro.isCalibrating());
   Gyro.setHeading(0,deg);
-  leftMotor.spin(reverse,speed*100,pct);
-  rightMotor.spin(forward,speed*100,pct);
-  waitUntil(fabs(Gyro.heading(deg))>=degrees);
+  leftMotor.spin(reverse,speed,percent);
+  rightMotor.spin(forward,speed,percent);
+  while(Gyro.heading(degrees) < 360-Degrees-1 || Gyro.heading(degrees) > 360-Degrees+1){
+    Controller1.Screen.clearScreen();
+    Controller1.Screen.setCursor(0,0);
+    Controller1.Screen.print(Gyro.heading(degrees));
+    Controller1.Screen.setCursor(1,0);
+  } 
   leftMotor.stop();
   rightMotor.stop();
-  if(originalHeading+degrees>=360){
-    Gyro.setHeading(originalHeading+degrees-360,deg);
-  }
-  else{
-    Gyro.setHeading(originalHeading+degrees,deg);
-  }
   task::sleep(500);
 }
 
 void autoMovement::DriveForward(float inches, float speed){
   float targetAngle = inches*360/($PI*wheelDiameter);
   driveMotors.setPosition(0,deg);
-  driveMotors.setVelocity(speed*100,pct);
-  waitUntil(driveMotors.position(degrees)>=targetAngle);
+  //driveMotors.setVelocity(speed*100,pct);
+  //waitUntil(driveMotors.position(degrees)>=targetAngle);
   
-  //driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
+  driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);
   //autoMovement::UpdatePosition(inches);
   driveMotors.stop();
   task::sleep(500);
@@ -221,25 +225,38 @@ void autonomousOLD(void){//Autonomous OLD
 
 void autonomous(void){
   ResetIntakes();
-  /*
+  Gyro.calibrate();
+  waitUntil(!Gyro.isCalibrating());
   move.SetIntakes(100,1000);
-  task::sleep(1500);
-  move.DriveForward(24,20);
-  task::sleep(1500);
-  move.TurnLeft(90,10);
-  task::sleep(1500);
+  move.DriveForward(36,100);
+  Elevator.spin(forward,50,percent);
+  move.SetIntakes(0,1000);
+  task::sleep(1000);
+  Elevator.stop();
+  move.DriveForward(10,100);
+  move.TurnLeft(100,10);
+  move.DriveForward(6,100);
   move.SetIntakes(50,1000);
-  move.TurnRight(180,10);
-  move.DriveForward(18,20);
-  */
-  move.DriveForward(12,20);
+  task::sleep(500);
+  move.SetIntakes(0,1000);
+  task::sleep(500);
+  move.SetIntakes(50,1000);
+  task::sleep(500);
+  move.SetIntakes(0,1000);
+  task::sleep(500);
+  /*
+  Gyro.calibrate(1);
+  //move.DriveForward(12,20);
   //move.TurnLeft(90,50);
-  move.TurnRight(90,25);
+  move.TurnRight(90,15);
+  //move.DriveForward(12,20);
+  //move.TurnLeft(90,25);
+  */
 }
 
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
-float speed_mod = 0.75; 
+float speed_mod = 1; 
 float elevator_mod = 1;
 bool Intakes = false;
 bool elevator = false;
