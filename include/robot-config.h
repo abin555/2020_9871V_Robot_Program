@@ -14,7 +14,8 @@ extern limit leftIntakeSwitch;
 extern accelerometer accelX;
 extern accelerometer accelY;
 extern gyro GyroOLD;
-extern inertial Gyro;
+extern inertial GyroB;
+extern gyro Gyro;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

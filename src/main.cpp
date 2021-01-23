@@ -20,7 +20,8 @@
 // accelX               accelerometer C               
 // accelY               accelerometer D               
 // GyroOLD              gyro          E               
-// Gyro                 inertial      12              
+// GyroB                inertial      12              
+// Gyro                 gyro          F               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -38,14 +39,15 @@ void pre_auton(void){/*Pre_auton setup*/}
 float globalIntakeAngle;
 class autoMovement{
   float wheelDiameter = 3.0f;
+  public:
   motor_group driveMotors = motor_group(leftMotor, rightMotor);
   motor_group intakeMotors = motor_group(leftIntake,rightIntake);
-  public:
   void TurnRight(float degrees,float speed);
   void TurnLeft(float degrees,float speed);
   void DriveForward(float inches, float speed);
   void SetIntakes(float percentOpen, int timeout);
   void UpdatePosition(float Distance);
+  void Ready();
   int x = 0;
   int y = 0;
 };
@@ -171,6 +173,11 @@ void autoMovement::SetIntakes(float percentOpen,int timeout){
   //task::sleep(timeout);
   //autoIntakes.interrupt();
 }
+void autoMovement::Ready(){
+  Elevator.spin(reverse,150,percent);
+  task::sleep(2000);
+  Elevator.stop();
+}
 autoMovement move;
 
 
@@ -223,10 +230,11 @@ void autonomousOLD(void){//Autonomous OLD
   }
 }
 
-void autonomous(void){
+void autonomousOLD2(void){
   ResetIntakes();
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
+  move.Ready();
   move.SetIntakes(100,1000);
   move.DriveForward(36,100);
   Elevator.spin(forward,50,percent);
@@ -236,22 +244,33 @@ void autonomous(void){
   move.DriveForward(10,100);
   move.TurnLeft(100,10);
   move.DriveForward(6,100);
-  move.SetIntakes(50,1000);
+}
+
+void autonomous(void){
+  ResetIntakes();
+  Gyro.calibrate();
+  waitUntil(!Gyro.isCalibrating());
+  //Point 1
+  move.Ready();
+  move.SetIntakes(100,100);
+  Elevator.spin(forward,50,percent);
+  //Point 2
   task::sleep(500);
-  move.SetIntakes(0,1000);
+  move.DriveForward(12,100);
+  move.SetIntakes(0,100);
+  Elevator.stop();
+  //Point 3
   task::sleep(500);
-  move.SetIntakes(50,1000);
+  move.DriveForward(35,100);
   task::sleep(500);
-  move.SetIntakes(0,1000);
+  move.TurnLeft(90,15);
+  //Point 4
   task::sleep(500);
-  /*
-  Gyro.calibrate(1);
-  //move.DriveForward(12,20);
-  //move.TurnLeft(90,50);
-  move.TurnRight(90,15);
-  //move.DriveForward(12,20);
-  //move.TurnLeft(90,25);
-  */
+  move.DriveForward(20,100);
+  move.SetIntakes(90,100);
+  move.driveMotors.spin(forward,100,percent);
+  task::sleep(4000);
+  move.driveMotors.stop();
 }
 
 //System Variables for operating robot. Tells Robot State
@@ -329,6 +348,7 @@ void usercontrol(void){//User control state
   //thread Odometry = thread(OdometrySystem);
   //DisplaySwitcher();//Update the screen
   thread Display = thread(DisplaySwitcher);
+  move.Ready();
   while(true){//Start the system loop
     UpdatePosition();
     leftMotor.velocity(rpm);
