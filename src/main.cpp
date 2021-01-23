@@ -46,11 +46,33 @@ class autoMovement{
   void TurnLeft(float degrees,float speed);
   void DriveForward(float inches, float speed);
   void SetIntakes(float percentOpen, int timeout);
+  void Precise90Turn(bool dir);
   void UpdatePosition(float Distance);
   void Ready();
   int x = 0;
   int y = 0;
 };
+
+void rightPreciseThreadTurn(){
+  rightMotor.spinToPosition(274.60,degrees);
+}
+void leftPreciseThreadTurn(){
+  leftMotor.spinToPosition(274.60,degrees);
+}
+void autoMovement::Precise90Turn(bool dir){
+  if(!dir){//left
+    leftMotor.setPosition(0,degrees);
+    rightMotor.setPosition(0,degrees);
+    thread rightTurn = thread(rightPreciseThreadTurn);
+    leftMotor.spinToPosition(-340.40,degrees);
+  }
+  else{
+    leftMotor.setPosition(0,degrees);
+    rightMotor.setPosition(0,degrees);
+    thread leftTurn = thread(leftPreciseThreadTurn);
+    rightMotor.spinToPosition(-340.40,degrees);
+  }
+}
 
 void autoMovement::UpdatePosition(float Distance){
   float direction = Gyro.heading(degrees);
@@ -177,7 +199,7 @@ void autoMovement::Ready(){
   Elevator.spin(reverse,150,percent);
   task::sleep(2000);
   Elevator.stop();
-}
+} 
 autoMovement move;
 
 
@@ -245,6 +267,14 @@ void autonomousOLD2(void){
   move.TurnLeft(100,10);
   move.DriveForward(6,100);
 }
+void autonomousTest(void){
+  move.Precise90Turn(false);
+  rightIntake.spinToPosition(90,degrees);
+  move.Precise90Turn(true);
+}
+void finalLeftMotorThread(){
+  leftMotor.spinToPosition(225.60,degrees);
+}
 
 void autonomous(void){
   ResetIntakes();
@@ -261,16 +291,40 @@ void autonomous(void){
   Elevator.stop();
   //Point 3
   task::sleep(500);
-  move.DriveForward(35,100);
+  move.DriveForward(33,100);
   task::sleep(500);
-  move.TurnLeft(90,15);
+  move.Precise90Turn(false);
   //Point 4
   task::sleep(500);
-  move.DriveForward(20,100);
-  move.SetIntakes(90,100);
+  //move.DriveForward(20,100);
+  rightIntake.spinToPosition(90,degrees);
   move.driveMotors.spin(forward,100,percent);
   task::sleep(4000);
   move.driveMotors.stop();
+  //Point 5
+  task::sleep(500);
+  move.DriveForward(-10,100);
+  rightMotor.spinFor(reverse,100,degrees);
+  leftMotor.spinFor(forward,100,degrees);
+  task::sleep(500);
+  move.driveMotors.spin(forward,100,percent);
+  //move.DriveForward(2,100);
+  task::sleep(150);
+  move.driveMotors.stop();
+  move.SetIntakes(100,100);
+  task::sleep(500);
+  rightMotor.setPosition(0,degrees);
+  leftMotor.setPosition(0,degrees);
+  thread finalLeft = thread(finalLeftMotorThread);
+  rightMotor.spinToPosition(448.0,degrees);
+  task::sleep(500);
+  rightMotor.spin(forward,50,percent);
+  task::sleep(500);
+  rightMotor.stop();
+  Elevator.spin(forward,100,percent);
+  //Point 6
+  task::sleep(5000);
+  Elevator.stop();
 }
 
 //System Variables for operating robot. Tells Robot State
