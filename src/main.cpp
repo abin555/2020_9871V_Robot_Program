@@ -54,7 +54,7 @@ class autoMovement{
 };
 
 void rightPreciseThreadTurn(){
-  rightMotor.spinToPosition(274.60,degrees);
+  rightMotor.spinToPosition(290.60,degrees);
 }
 void leftPreciseThreadTurn(){
   leftMotor.spinToPosition(274.60,degrees);
@@ -280,6 +280,7 @@ void autonomous(void){
   ResetIntakes();
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
+  //SECTION 1
   //Point 1
   move.Ready();
   move.SetIntakes(100,100);
@@ -299,7 +300,7 @@ void autonomous(void){
   //move.DriveForward(20,100);
   rightIntake.spinToPosition(90,degrees);
   move.driveMotors.spin(forward,100,percent);
-  task::sleep(4000);
+  task::sleep(2500);
   move.driveMotors.stop();
   //Point 5
   task::sleep(500);
@@ -318,13 +319,22 @@ void autonomous(void){
   thread finalLeft = thread(finalLeftMotorThread);
   rightMotor.spinToPosition(448.0,degrees);
   task::sleep(500);
+  finalLeft.interrupt();
   rightMotor.spin(forward,50,percent);
   task::sleep(500);
   rightMotor.stop();
   Elevator.spin(forward,100,percent);
   //Point 6
-  task::sleep(5000);
+  task::sleep(2500);
   Elevator.stop();
+
+  //SECTION 2
+  move.DriveForward(-15,100);
+  move.Precise90Turn(true);
+  move.SetIntakes(100,100);
+  move.DriveForward(15,100);
+  Elevator.spin(forward,50,percent);
+  move.DriveForward(10,100);
 }
 
 //System Variables for operating robot. Tells Robot State
