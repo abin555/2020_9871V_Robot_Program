@@ -47,7 +47,6 @@ class autoMovement{
   void DriveForward(float inches, float speed);
   void SetIntakes(float percentOpen, int timeout);
   void Precise90Turn(bool dir);
-  void UpdatePosition(float Distance);
   void Ready();
   int x = 0;
   int y = 0;
@@ -71,75 +70,6 @@ void autoMovement::Precise90Turn(bool dir){
     rightMotor.setPosition(0,degrees);
     thread leftTurn = thread(leftPreciseThreadTurn);
     rightMotor.spinToPosition(-340.40,degrees);
-  }
-}
-
-void autoMovement::UpdatePosition(float Distance){
-  float direction = Gyro.heading(degrees);
-  float angle = 0;
-  float deltaX = 0;
-  float deltaY = 0;
-  int Xdir = 1;//1 = positive X | -1 = negative X
-  int Ydir =  1;//1 = positive Y | -1 = negative Y
-  /*
-                +Y
-                │
-                │
-                │
-                │
-                │
-                │
- -X ────────────┼──────────── +X
-                │
-                │
-                │
-                │
-                │
-                │
-                -Y
-  */
-  if(direction != 0 && direction != 90 && direction != 180 && direction != 270){
-    if(direction > 0 && direction < 90){
-      angle = direction;
-      Xdir = 1;
-      Ydir = 1;
-    }
-    else if(direction > 90 &&  direction < 180){
-      angle = direction - 90;
-      Xdir = 1;
-      Ydir = -1;
-    }
-    else if(direction > 180 && direction < 270){
-      angle = direction - 180;
-      Xdir = -1;
-      Ydir = -1;
-    }
-    else if(direction > 270 && direction < 360){
-      angle = direction - 270;
-      Xdir = -1;
-      Ydir = 1;
-    }
-    deltaX = sin(angle)*Distance;
-    deltaY = cos(angle)*Distance;
-    deltaX *= Xdir;
-    deltaY *= Ydir;
-    autoMovement::x += deltaX;
-    autoMovement::y += deltaY;
-    //TODO: Create Trigonometric System!!!
-  }
-  else{
-    if(direction == 0){//+Y
-      autoMovement::y = autoMovement::y + Distance;
-    }
-    else if(direction == 90){//+X
-      autoMovement::x = autoMovement::x + Distance;
-    }
-    else if(direction == 180){//-Y
-      autoMovement::y = autoMovement::y - Distance;
-    }
-    else if(direction == 270){//-X
-      autoMovement::x = autoMovement::x - Distance;
-    }
   }
 }
 
