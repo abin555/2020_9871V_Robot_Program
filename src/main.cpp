@@ -53,23 +53,23 @@ class autoMovement{
 };
 
 void rightPreciseThreadTurn(){
-  rightMotor.spinToPosition(290.60,degrees);
+  rightMotor.spinToPosition(290.60,degrees,100,velocityUnits::pct);
 }
 void leftPreciseThreadTurn(){
-  leftMotor.spinToPosition(274.60,degrees);
+  leftMotor.spinToPosition(274.60,degrees,100,velocityUnits::pct);
 }
 void autoMovement::Precise90Turn(bool dir){
   if(!dir){//left
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
     thread rightTurn = thread(rightPreciseThreadTurn);
-    leftMotor.spinToPosition(-340.40,degrees);
+    leftMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct);
   }
   else{
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
     thread leftTurn = thread(leftPreciseThreadTurn);
-    rightMotor.spinToPosition(-340.40,degrees);
+    rightMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct);
   }
 }
 
@@ -216,42 +216,32 @@ void autonomous(void){
   move.SetIntakes(100,100);
   Elevator.spin(forward,50,percent);
   //Point 2
-  task::sleep(500);
   move.DriveForward(12,100);
   move.SetIntakes(0,100);
   Elevator.stop();
   //Point 3
-  task::sleep(500);
   move.DriveForward(33,100);
-  task::sleep(500);
   move.Precise90Turn(false);
   //Point 4
-  task::sleep(500);
   //move.DriveForward(20,100);
   rightIntake.spinToPosition(90,degrees);
   move.driveMotors.spin(forward,100,percent);
   task::sleep(2500);
   move.driveMotors.stop();
   //Point 5
-  task::sleep(500);
   move.DriveForward(-10,100);
   rightMotor.spinFor(reverse,100,degrees);
   leftMotor.spinFor(forward,100,degrees);
-  task::sleep(500);
   move.driveMotors.spin(forward,100,percent);
   //move.DriveForward(2,100);
-  task::sleep(150);
   move.driveMotors.stop();
   move.SetIntakes(100,100);
-  task::sleep(500);
   rightMotor.setPosition(0,degrees);
   leftMotor.setPosition(0,degrees);
   thread finalLeft = thread(finalLeftMotorThread);
   rightMotor.spinToPosition(448.0,degrees);
-  task::sleep(500);
   finalLeft.interrupt();
   rightMotor.spin(forward,50,percent);
-  task::sleep(500);
   rightMotor.stop();
   Elevator.spin(forward,100,percent);
   //Point 6
@@ -261,10 +251,15 @@ void autonomous(void){
   //SECTION 2
   move.DriveForward(-15,100);
   move.Precise90Turn(true);
+  move.Precise90Turn(true);
   move.SetIntakes(100,100);
-  move.DriveForward(15,100);
   Elevator.spin(forward,50,percent);
   move.DriveForward(10,100);
+  Elevator.stop();
+  move.DriveForward(5,100);
+  Elevator.spin(forward,100,percent);
+  task::sleep(2500);
+  Elevator.stop();
 }
 
 //System Variables for operating robot. Tells Robot State
