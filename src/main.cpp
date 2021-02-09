@@ -351,37 +351,11 @@ void usercontrol(void){//User control state
         task::sleep(1);
       }
     }
-    if(elevatormode == true){//If not true, use joystick control
-      Elevator.spin(forward,elevator_mod*Controller1.Axis2.value(),velocityUnits::pct);
-    }
-    else{
-      if(elevator == true){//If elevator is enabled
-        if(elevatordir == false){//Spin forward
-          Elevator.spin(forward,elevator_mod*100,velocityUnits::pct);
-        }
-        else{//Spin backwards
-          Elevator.spin(reverse,elevator_mod*100,velocityUnits::pct);
-        }
-      }
-      else{
-        Elevator.stop();
-      }
-    }
+    Elevator.spin(forward,elevator_mod*Controller1.Axis2.value(),velocityUnits::pct);
+
     if(Controller1.ButtonB.pressing()){//Switch elevator direction
       elevatordir = !elevatordir;
       while(Controller1.ButtonB.pressing()){
-        task::sleep(1);
-      }
-    }
-    if(Controller1.ButtonY.pressing()){//Toggle the elevator
-      elevator = !elevator;
-      while(Controller1.ButtonY.pressing()){
-        task::sleep(1);
-      }
-    }
-    if(Controller1.ButtonRight.pressing()){//Switch between joystick and button control.
-      elevatormode = !elevatormode;
-      while(Controller1.ButtonRight.pressing()){
         task::sleep(1);
       }
     }
@@ -408,21 +382,37 @@ void usercontrol(void){//User control state
       elevator_mod -= 0.05;
       task::sleep(10);
     }
-    if(Controller1.ButtonLeft.pressing()){//Rezero the Intakes
-      ResetIntakes();
-      while(Controller1.ButtonLeft.pressing()){
-        task::sleep(1); 
+
+    if(Controller1.ButtonY.pressing()){
+      IntakeMotors.spinToPosition(90,degrees,false);
+      while(Controller1.ButtonY.pressing()){}
+    }
+    else{
+      if(IntakeMotors.position(degrees) == 90){
+        IntakeMotors.stop(hold);
       }
     }
     if(Controller1.ButtonUp.pressing()){
-      IntakeThread.interrupt();
-      IntakeMotors.spinToPosition(180,degrees);
-      IntakeThread = thread(OperateIntakes);
-      while(Controller1.ButtonUp.pressing()){
-        task::sleep(1);
-      }
+      leftMotor.spin(forward,60,velocityUnits::pct);
+      rightMotor.spin(forward,60,velocityUnits::pct);
     }
-    //wait(50, msec);
+    if(Controller1.ButtonDown.pressing()){
+      leftMotor.spin(reverse,60,velocityUnits::pct);
+      rightMotor.spin(reverse,60,velocityUnits::pct);
+    }
+    if(Controller1.ButtonLeft.pressing()){
+      leftMotor.spin(reverse,25,velocityUnits::pct);
+      rightMotor.spin(forward,25,velocityUnits::pct);
+    }
+    if(Controller1.ButtonRight.pressing()){
+      leftMotor.spin(forward,25,velocityUnits::pct);
+      rightMotor.spin(reverse,25,velocityUnits::pct);
+    }
+    if(Controller1.Axis3.value() == 0 && Controller1.Axis4.value() == 0 
+    && !Controller1.ButtonUp.pressing() && !Controller1.ButtonDown.pressing() && !Controller1.ButtonLeft.pressing() && !Controller1.ButtonRight.pressing()){
+      leftMotor.stop();
+      rightMotor.stop();
+    }
   }
 }
 
