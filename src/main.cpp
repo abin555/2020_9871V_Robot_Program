@@ -37,6 +37,7 @@ motor_group driveM = motor_group(leftMotor,rightMotor);//Drive Motor group
 void pre_auton(void){/*Pre_auton setup*/}
 
 float globalIntakeAngle;
+
 class autoMovement{//Define Autonomous Class Structure
   float wheelDiameter = 3.0f;//Wheel Diameter constant
   public:
@@ -150,64 +151,12 @@ void AutonomousIntakes(){//Intake Function for autonomous
   }
 }
 
-void finalLeftMotorThread(){
-  leftMotor.spinToPosition(225.60,degrees);
-}
-
+//TODO: Create Backup Autonomous!!!
 void autonomous(void){
   ResetIntakes();
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
-  //SECTION 1
-  //Point 1
   move.Ready();
-  move.SetIntakes(100,100);
-  Elevator.spin(forward,50,percent);
-  //Point 2
-  move.DriveForward(12,100);
-  move.SetIntakes(0,100);
-  Elevator.stop();
-  //Point 3
-  move.DriveForward(33,100);
-  move.Precise90Turn(false);
-  //Point 4
-  //move.DriveForward(20,100);
-  rightIntake.spinToPosition(90,degrees);
-  move.driveMotors.spin(forward,100,percent);
-  task::sleep(2500);
-  move.driveMotors.stop();
-  //Point 5
-  move.DriveForward(-10,100);
-  rightMotor.spinFor(reverse,100,degrees);
-  leftMotor.spinFor(forward,100,degrees);
-  move.driveMotors.spin(forward,100,percent);
-  //move.DriveForward(2,100);
-  move.driveMotors.stop();
-  move.SetIntakes(100,100);
-  rightMotor.setPosition(0,degrees);
-  leftMotor.setPosition(0,degrees);
-  thread finalLeft = thread(finalLeftMotorThread);
-  rightMotor.spinToPosition(448.0,degrees);
-  finalLeft.interrupt();
-  rightMotor.spin(forward,50,percent);
-  rightMotor.stop();
-  Elevator.spin(forward,100,percent);
-  //Point 6
-  task::sleep(2500);
-  Elevator.stop();
-
-  //SECTION 2
-  move.DriveForward(-15,100);
-  move.Precise90Turn(true);
-  move.Precise90Turn(true);
-  move.SetIntakes(100,100);
-  Elevator.spin(forward,50,percent);
-  move.DriveForward(10,100);
-  Elevator.stop();
-  move.DriveForward(5,100);
-  Elevator.spin(forward,100,percent);
-  task::sleep(2500);
-  Elevator.stop();
 }
 
 //System Variables for operating robot. Tells Robot State
@@ -224,8 +173,8 @@ void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool Int
   screen.clearScreen();//clear screen
   screen.setCursor(1,0);//set cursor
   //Intake Status indicator
-  if(Intakes){screen.print("Intakes Rolling | ");}
-  else{screen.print("Intakes Stopped | ");}
+  if(Intakes){screen.print("Intakes Open");}
+  else{screen.print("Intakes Closed");}
   screen.setCursor(2,0);//Set cursor
   //Drive speed indicator
   screen.print("Drive Speed: ");
@@ -323,6 +272,7 @@ void usercontrol(void){//User control state
         IntakeMotors.stop(hold);
       }
     }
+
     if(Controller1.ButtonUp.pressing()){//Drive forward at 60 percent speed
       leftMotor.spin(forward,60,velocityUnits::pct);
       rightMotor.spin(forward,60,velocityUnits::pct);
