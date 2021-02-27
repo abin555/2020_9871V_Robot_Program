@@ -221,80 +221,99 @@ void DisplaySwitcher(){//Function to time the screen updates
   }
 }
 
+bool breaks = false;//Keeps track of breaks
+bool xpressed = false;//Keeps track of X button state
+bool Apressed = false;//Keeps track of A button state
+bool IntakePos = true; //False = 0; True = 180
+bool ypressed = false;//Keeps track of Y button state
+bool running = true;
+void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int UP, int DN, int LF,int RT){//System Control Main Function
+  if(!breaks){//If not breaked, drive
+    Drive(S3,S4,speed_mod);//Drive system
+  }
+  //OperateIntakes();
+  if(A && !Apressed){//Toggle breaks 
+    breaks = !breaks;
+    Apressed = true;
+  }
+  else{
+    if(!A){
+      Apressed = false;
+    }
+  }
+  Elevator.spin(forward,elevator_mod*S2,velocityUnits::pct);//Spin elevator with the second axis
+  if(X){//Toggle the intakes
+    if(!xpressed){
+      if(IntakePos){//push out
+        IntakeMotors.spinToPosition(180,degrees,false); //180 degrees is target to spin to
+      }
+      else{//pull in
+        IntakeMotors.spinToPosition(0,degrees,false);// 0 degrees is where the intakes are spinning to.
+      }
+      IntakePos = !IntakePos;
+      xpressed = true;
+    }
+  }
+  else{
+    xpressed = false;
+  }
+  if(Y){//Set intakes to 90 degrees on only one press
+    if(!ypressed){
+      IntakeMotors.spinToPosition(90,degrees,false);
+    }
+    ypressed = true;
+  }
+  else{
+    ypressed = false;
+    if(IntakeMotors.position(degrees) == 90){
+      IntakeMotors.stop(hold);
+    }
+  }
+  //ofs << "Update\r\n";
+  if(UP){//Drive forward with up arrow
+    leftMotor.spin(forward,60,velocityUnits::pct);
+    rightMotor.spin(forward,60,velocityUnits::pct);
+  }
+  if(DN){//Drive in reverse with down arrow
+    leftMotor.spin(reverse,60,velocityUnits::pct);
+    rightMotor.spin(reverse,60,velocityUnits::pct);
+  }
+  if(LF){//Turn left
+    leftMotor.spin(reverse,25,velocityUnits::pct);
+    rightMotor.spin(forward,25,velocityUnits::pct);
+  }
+  if(RT){//Turn right
+    leftMotor.spin(forward,25,velocityUnits::pct);
+    rightMotor.spin(reverse,25,velocityUnits::pct);
+  }
+  if(B){//End recording
+    running = false;
+  }
+  if(S3 == 0 && S4 == 0 && !UP && !DN && !LF && !RT){
+    leftMotor.stop();
+    rightMotor.stop();
+  }
+}
+
 void usercontrol(void){//User control state
   ResetIntakes();//Zero the intakes
-  thread IntakeThread = thread(OperateIntakes);//Open the intake operation thread to run simultaneously. (maybe)
   thread Display = thread(DisplaySwitcher);
   move.Ready();
+  int S1,S2,S3,S4,X,A,Y,B,UP,DN,LF,RT;
   while(true){//Start the system loop
-    leftMotor.velocity(rpm);
-    if(!Breaks){//If not breaked, drive
-      Drive(Controller1.Axis3.value(),Controller1.Axis4.value(),speed_mod);//Drive system
-    }
-
-    if(Controller1.ButtonA.pressing()){//Toggle breaks 
-      Breaks = !Breaks;
-      while(Controller1.ButtonA.pressing()){//Do nothing until A is released
-        task::sleep(1);
-      }
-    }
-    Elevator.spin(forward,elevator_mod*Controller1.Axis2.value(),velocityUnits::pct);//Spin elevator
-
-    if(Controller1.ButtonX.pressing()){//Toggle the intakes
-      Intakes = !Intakes;
-      while(Controller1.ButtonX.pressing()){//Wait until the x button is released
-       task::sleep(1);
-      }
-    }
-    if(Controller1.ButtonL1.pressing()){//Increase the drive speed
-      speed_mod += 0.05;
-      task::sleep(10);
-    }
-    if(Controller1.ButtonL2.pressing()){//Decrease the drive speed
-      speed_mod -= 0.05;
-      task::sleep(10);
-    }
-    if(Controller1.ButtonR1.pressing()){//Increase the elevator speed
-      elevator_mod += 0.05;
-      task::sleep(10);
-    }
-    if(Controller1.ButtonR2.pressing()){//Decrease the elevator speed
-      elevator_mod -= 0.05;
-      task::sleep(10);
-    }
-
-    if(Controller1.ButtonY.pressing()){//Put Claw in punch position
-      IntakeMotors.spinToPosition(90,degrees,false);
-      while(Controller1.ButtonY.pressing()){}//Wait until Y button is released
-    }
-    else{
-      if(IntakeMotors.position(degrees) == 90){//Stop motors when desired position is reached.
-        IntakeMotors.stop(hold);
-      }
-    }
-
-    if(Controller1.ButtonUp.pressing()){//Drive forward at 60 percent speed
-      leftMotor.spin(forward,60,velocityUnits::pct);
-      rightMotor.spin(forward,60,velocityUnits::pct);
-    }
-    if(Controller1.ButtonDown.pressing()){//Drive backwards at 60 percent speed
-      leftMotor.spin(reverse,60,velocityUnits::pct);
-      rightMotor.spin(reverse,60,velocityUnits::pct);
-    }
-    if(Controller1.ButtonLeft.pressing()){//Turn left at 25 percent speed
-      leftMotor.spin(reverse,25,velocityUnits::pct);
-      rightMotor.spin(forward,25,velocityUnits::pct);
-    }
-    if(Controller1.ButtonRight.pressing()){//Turn right at 25 percent speed
-      leftMotor.spin(forward,25,velocityUnits::pct);
-      rightMotor.spin(reverse,25,velocityUnits::pct);
-    }
-    //When the controller is not telling it to drive, stop the drive motors
-    if(Controller1.Axis3.value() == 0 && Controller1.Axis4.value() == 0 
-    && !Controller1.ButtonUp.pressing() && !Controller1.ButtonDown.pressing() && !Controller1.ButtonLeft.pressing() && !Controller1.ButtonRight.pressing()){
-      leftMotor.stop();
-      rightMotor.stop();
-    }
+    S1 = Controller1.Axis1.value();
+    S2 = Controller1.Axis2.value();
+    S3 = Controller1.Axis3.value();
+    S4 = Controller1.Axis4.value();
+    X = Controller1.ButtonX.pressing();
+    A = Controller1.ButtonA.pressing();
+    B = Controller1.ButtonB.pressing();
+    Y = Controller1.ButtonY.pressing();
+    UP = Controller1.ButtonUp.pressing();
+    DN = Controller1.ButtonDown.pressing();
+    LF = Controller1.ButtonLeft.pressing();
+    RT = Controller1.ButtonRight.pressing();
+    SystemControls(S1,S2,S3,S4,X,A,B,Y,UP,DN,LF,RT);
   }
 }
 
