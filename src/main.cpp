@@ -53,24 +53,18 @@ class autoMovement{//Define Autonomous Class Structure
   int y = 0;
 };
 
-void rightPreciseThreadTurn(){//Separate turn thread
-  rightMotor.spinToPosition(290.60,degrees,100,velocityUnits::pct);
-}
-void leftPreciseThreadTurn(){//Separate turn thread
-  leftMotor.spinToPosition(274.60,degrees,100,velocityUnits::pct);
-}
 void autoMovement::Precise90Turn(bool dir){//Use encoders to precisely turn left or right 90 degrees
   if(!dir){//left
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
-    thread rightTurn = thread(rightPreciseThreadTurn);
-    leftMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct);
+    rightMotor.spinToPosition(290.60,degrees,100,velocityUnits::pct,false);
+    leftMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
   }
   else{
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
-    thread leftTurn = thread(leftPreciseThreadTurn);
-    rightMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct);
+    leftMotor.spinToPosition(274.60,degrees,100,velocityUnits::pct,false);
+    rightMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
   }
 }
 
@@ -156,7 +150,24 @@ void autonomous(void){
   ResetIntakes();
   Gyro.calibrate();
   waitUntil(!Gyro.isCalibrating());
-  move.Ready();
+  //move.Ready();
+  Elevator.spin(forward,100,percent);
+  task::sleep(3000);
+  Elevator.stop();
+  move.DriveForward(-14,100);
+  rightIntake.spinToPosition(90,degrees);
+  rightIntake.stop(hold);
+  rightMotor.spinFor(405.80,degrees,false);
+  leftMotor.spinFor(-395.60,degrees,false);
+  task::sleep(1500);
+  move.DriveForward(40,100);
+  move.Precise90Turn(false);
+  task::sleep(2000);
+  leftMotor.spin(forward,100,percent);
+  rightMotor.spin(forward,100,percent);
+  task::sleep(5000);
+  leftMotor.stop(hold);
+  rightMotor.stop(hold);
 }
 
 //System Variables for operating robot. Tells Robot State
