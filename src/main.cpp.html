@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/strict.dtd">
+<html>
+<head>
+<META http-equiv=Content-Type content="text/html; charset=UTF-8">
+<title>Exported from Notepad++</title>
+<style type="text/css">
+span {
+	font-family: 'Courier New';
+	font-size: 10pt;
+	color: #000000;
+}
+.sc0 {
+}
+.sc1 {
+	color: #008000;
+}
+.sc2 {
+	color: #008000;
+}
+.sc4 {
+	color: #FF8000;
+}
+.sc5 {
+	font-weight: bold;
+	color: #0000FF;
+}
+.sc6 {
+	color: #808080;
+}
+.sc9 {
+	color: #804000;
+}
+.sc10 {
+	font-weight: bold;
+	color: #000080;
+}
+.sc11 {
+}
+.sc16 {
+	color: #8000FF;
+}
+</style>
+</head>
+<body>
+<div style="float: left; white-space: pre; line-height: 1; background: #FFFFFF; "><span class="sc1">/*----------------------------------------------------------------------------*/</span><span class="sc0">
+</span><span class="sc1">/*                                                                            */</span><span class="sc0">
+</span><span class="sc1">/*    Module:       main.cpp                                                  */</span><span class="sc0">
+</span><span class="sc1">/*    Author:       C:\Users\Aidan Boisvert                                   */</span><span class="sc0">
+</span><span class="sc1">/*    Created:      Tue Oct 13 2020                                           */</span><span class="sc0">
+</span><span class="sc1">/*    Description:  V5 project                                                */</span><span class="sc0">
+</span><span class="sc1">/*                                                                            */</span><span class="sc0">
+</span><span class="sc1">/*----------------------------------------------------------------------------*/</span><span class="sc0">
+</span><span class="sc2">// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// Controller1          controller                    
+// rightIntake          motor         1               
+// leftIntake           motor         2               
+// Elevator             motor         3               
+// rightMotor           motor         20              
+// leftMotor            motor         11              
+// rightIntakeSwitch    limit         A               
+// leftIntakeSwitch     limit         B               
+// accelX               accelerometer C               
+// accelY               accelerometer D               
+// GyroOLD              gyro          E               
+// GyroB                inertial      12              
+// Gyro                 gyro          F               
+// ---- END VEXCODE CONFIGURED DEVICES ----
+</span><span class="sc0">
+</span><span class="sc9">#include "vex.h"
+#include "math.h"
+</span><span class="sc0">
+</span><span class="sc5">using</span><span class="sc0"> </span><span class="sc5">namespace</span><span class="sc0"> </span><span class="sc11">vex</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc11">competition</span><span class="sc0"> </span><span class="sc11">Competition</span><span class="sc10">;</span><span class="sc2">//Competition object
+</span><span class="sc11">motor_group</span><span class="sc0"> </span><span class="sc11">IntakeMotors</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor_group</span><span class="sc10">(</span><span class="sc11">leftIntake</span><span class="sc10">,</span><span class="sc11">rightIntake</span><span class="sc10">);</span><span class="sc2">//Intake motor group
+</span><span class="sc11">motor_group</span><span class="sc0"> </span><span class="sc11">driveM</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor_group</span><span class="sc10">(</span><span class="sc11">leftMotor</span><span class="sc10">,</span><span class="sc11">rightMotor</span><span class="sc10">);</span><span class="sc2">//Drive Motor group
+</span><span class="sc9">#define screen Controller1.Screen</span><span class="sc2">//Define screen mapping
+</span><span class="sc9">#define $PI 3.141592653589</span><span class="sc2">//Aproximate PI
+</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">pre_auton</span><span class="sc10">(</span><span class="sc16">void</span><span class="sc10">){</span><span class="sc1">/*Pre_auton setup*/</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">globalIntakeAngle</span><span class="sc10">;</span><span class="sc0">
+
+</span><span class="sc16">class</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">{</span><span class="sc2">//Define Autonomous Class Structure
+</span><span class="sc0">  </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">wheelDiameter</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">4.0f</span><span class="sc10">;</span><span class="sc2">//Wheel Diameter constant
+</span><span class="sc0">  </span><span class="sc16">public</span><span class="sc10">:</span><span class="sc0">
+  </span><span class="sc11">motor_group</span><span class="sc0"> </span><span class="sc11">driveMotors</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor_group</span><span class="sc10">(</span><span class="sc11">leftMotor</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">rightMotor</span><span class="sc10">);</span><span class="sc2">//drive motor group
+</span><span class="sc0">  </span><span class="sc11">motor_group</span><span class="sc0"> </span><span class="sc11">intakeMotors</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor_group</span><span class="sc10">(</span><span class="sc11">leftIntake</span><span class="sc10">,</span><span class="sc11">rightIntake</span><span class="sc10">);</span><span class="sc2">//intake motor group
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">TurnRight</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">);</span><span class="sc2">//Turn right function definition
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">TurnLeft</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">);</span><span class="sc2">//Turn left function definition
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">DriveForward</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">inches</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">);</span><span class="sc2">//Drive foward definition
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">SetIntakes</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">percentOpen</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">timeout</span><span class="sc10">);</span><span class="sc2">//Set Intakes definition
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">Precise90Turn</span><span class="sc10">(</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">dir</span><span class="sc10">);</span><span class="sc2">//Precisely turn 90 degrees definition
+</span><span class="sc0">  </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">Ready</span><span class="sc10">();</span><span class="sc2">//Readying function definition
+</span><span class="sc0">  </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">x</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0">
+  </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">y</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc10">};</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">Precise90Turn</span><span class="sc10">(</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">dir</span><span class="sc10">){</span><span class="sc2">//Use encoders to precisely turn left or right 90 degrees
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(!</span><span class="sc11">dir</span><span class="sc10">){</span><span class="sc2">//left
+</span><span class="sc0">    </span><span class="sc2">//Zero Encoder Position
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc2">//Spin motors concurrently to make robot turn 90 degrees left
+</span><span class="sc0">    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">290.60</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(-</span><span class="sc4">340.40</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc2">//Zero Encoder Position
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc2">//Spin motors concurrently to make robot turn 90 degrees right
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">274.60</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(-</span><span class="sc4">340.40</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">TurnRight</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">Degrees</span><span class="sc10">,</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">){</span><span class="sc2">//Turn right using gyroscope
+</span><span class="sc0">  </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">setHeading</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">deg</span><span class="sc10">);</span><span class="sc2">//reset heading
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc11">speed</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//spin left motor
+</span><span class="sc0">  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc11">speed</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//spin right motor
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">&lt;</span><span class="sc0"> </span><span class="sc11">Degrees</span><span class="sc10">-</span><span class="sc4">1</span><span class="sc0"> </span><span class="sc10">||</span><span class="sc0"> </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">&gt;</span><span class="sc0"> </span><span class="sc11">Degrees</span><span class="sc10">+</span><span class="sc4">1</span><span class="sc10">){</span><span class="sc2">//Wait until angle is correct
+</span><span class="sc0">    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">clearScreen</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">));</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">1</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0"> 
+  </span><span class="sc2">//Stop motors
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">500</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">TurnLeft</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">Degrees</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">){</span><span class="sc2">//Turn left using gyroscope
+</span><span class="sc0">  </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">setHeading</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">deg</span><span class="sc10">);</span><span class="sc2">//reset heading
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc11">speed</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//spin left motor
+</span><span class="sc0">  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc11">speed</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//spin right motor
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">&lt;</span><span class="sc0"> </span><span class="sc4">360</span><span class="sc10">-</span><span class="sc11">Degrees</span><span class="sc10">-</span><span class="sc4">1</span><span class="sc0"> </span><span class="sc10">||</span><span class="sc0"> </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">&gt;</span><span class="sc0"> </span><span class="sc4">360</span><span class="sc10">-</span><span class="sc11">Degrees</span><span class="sc10">+</span><span class="sc4">1</span><span class="sc10">){</span><span class="sc2">//Wait until angle is correct
+</span><span class="sc0">    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">clearScreen</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">heading</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">));</span><span class="sc0">
+    </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">1</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0"> 
+  </span><span class="sc2">//Stop motors
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">500</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">DriveForward</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">inches</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed</span><span class="sc10">){</span><span class="sc2">//Drive distance function
+</span><span class="sc0">  </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">targetAngle</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">inches</span><span class="sc10">*</span><span class="sc4">360</span><span class="sc10">/(</span><span class="sc11">$PI</span><span class="sc10">*</span><span class="sc11">wheelDiameter</span><span class="sc10">);</span><span class="sc2">//Calculated turn amount in degrees
+</span><span class="sc0">  </span><span class="sc11">driveMotors</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">deg</span><span class="sc10">);</span><span class="sc0">
+  
+  </span><span class="sc11">driveMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">position</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)+</span><span class="sc11">targetAngle</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc2">//spin drive motors to calculated position
+</span><span class="sc0">  </span><span class="sc11">driveMotors</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc2">//Stop motors when position reached.
+</span><span class="sc0">  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">500</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">SetIntakes</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">percentOpen</span><span class="sc10">,</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">timeout</span><span class="sc10">){</span><span class="sc2">//Set intakes to percentage open
+</span><span class="sc0">  </span><span class="sc11">globalIntakeAngle</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">180</span><span class="sc10">*(</span><span class="sc11">percentOpen</span><span class="sc10">/</span><span class="sc4">100</span><span class="sc10">);</span><span class="sc2">//Calculated angle in degrees
+</span><span class="sc0">  </span><span class="sc11">intakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc11">globalIntakeAngle</span><span class="sc10">,</span><span class="sc11">deg</span><span class="sc10">);</span><span class="sc2">//spin to calculated angle
+</span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autoMovement</span><span class="sc10">::</span><span class="sc11">Ready</span><span class="sc10">(){</span><span class="sc2">//Deploy top
+</span><span class="sc0">  </span><span class="sc11">Elevator</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">150</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//spin elevator down
+</span><span class="sc0">  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">2000</span><span class="sc10">);</span><span class="sc2">//Wait
+</span><span class="sc0">  </span><span class="sc11">Elevator</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc2">//stop
+</span><span class="sc10">}</span><span class="sc0"> 
+</span><span class="sc11">autoMovement</span><span class="sc0"> </span><span class="sc11">move</span><span class="sc10">;</span><span class="sc2">//Define autonomous class
+</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">ResetIntakes</span><span class="sc10">(){</span><span class="sc2">//Zero the intake positions
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(!</span><span class="sc11">rightIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()){</span><span class="sc2">//Unless the right button is pressed, move the intake closer to zero
+</span><span class="sc0">    </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">spinFor</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">10</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">while</span><span class="sc10">(!</span><span class="sc11">leftIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()){</span><span class="sc2">//Unless the left button is pressed, move the intake closer to zero
+</span><span class="sc0">    </span><span class="sc11">leftIntake</span><span class="sc10">.</span><span class="sc11">spinFor</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">10</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc2">//Set Intake positions to 0 degrees and turns
+</span><span class="sc0">  </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">turns</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">leftIntake</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">leftIntake</span><span class="sc10">.</span><span class="sc11">setPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">turns</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">AutonomousIntakes</span><span class="sc10">(){</span><span class="sc2">//Intake Function for autonomous
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc5">true</span><span class="sc10">){</span><span class="sc0">
+    </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">leftIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()</span><span class="sc0"> </span><span class="sc10">||</span><span class="sc0"> </span><span class="sc11">rightIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()){</span><span class="sc2">//push out
+</span><span class="sc0">      </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">180</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0"> </span><span class="sc2">//180 degrees is target to spin to
+</span><span class="sc0">    </span><span class="sc10">}</span><span class="sc0">
+    </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc2">//pull in
+</span><span class="sc0">      </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc2">// 0 degrees is where the intakes are spinning to.
+</span><span class="sc0">    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc2">//Backup Autonomous
+//Scores into corner goal.
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">autonomous</span><span class="sc10">(</span><span class="sc16">void</span><span class="sc10">){</span><span class="sc0">
+  </span><span class="sc11">ResetIntakes</span><span class="sc10">();</span><span class="sc2">//Resets intakes
+</span><span class="sc0">  </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">calibrate</span><span class="sc10">();</span><span class="sc2">//Calibrates Gyro
+</span><span class="sc0">  </span><span class="sc11">waitUntil</span><span class="sc10">(!</span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">isCalibrating</span><span class="sc10">());</span><span class="sc0">
+  </span><span class="sc2">//move.Ready();
+</span><span class="sc0">  </span><span class="sc11">Elevator</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc2">//Score ball into goal
+</span><span class="sc0">  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">3000</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">Elevator</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc11">move</span><span class="sc10">.</span><span class="sc11">DriveForward</span><span class="sc10">(-</span><span class="sc4">14</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">);</span><span class="sc2">//Backup
+</span><span class="sc0">  </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">90</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc2">//Open fist
+</span><span class="sc0">  </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">(</span><span class="sc11">hold</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc2">//Turn 125 degrees
+</span><span class="sc0">  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spinFor</span><span class="sc10">(</span><span class="sc4">405.80</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spinFor</span><span class="sc10">(-</span><span class="sc4">395.60</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">1500</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">move</span><span class="sc10">.</span><span class="sc11">DriveForward</span><span class="sc10">(</span><span class="sc4">40</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">);</span><span class="sc2">//Drive Forward to center goal
+</span><span class="sc0">  </span><span class="sc11">move</span><span class="sc10">.</span><span class="sc11">Precise90Turn</span><span class="sc10">(</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc2">//Turn left 90 degrees
+</span><span class="sc0">  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">2000</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc2">//Punch center goal
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">percent</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">task</span><span class="sc10">::</span><span class="sc11">sleep</span><span class="sc10">(</span><span class="sc4">5000</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">(</span><span class="sc11">hold</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">(</span><span class="sc11">hold</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc2">//System Variables for operating robot. Tells Robot State
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">Breaks</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed_mod</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">1</span><span class="sc10">;</span><span class="sc0"> 
+</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">elevator_mod</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">1</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">Intakes</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">elevator</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">elevatormode</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">elevatordir</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">IntakeCall</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">ControllerScreenUpdater</span><span class="sc10">(</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">Breaks</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">Speed</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">elevator</span><span class="sc10">,</span><span class="sc0">  </span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">IntakeSet</span><span class="sc10">){</span><span class="sc2">//Updates Screen
+</span><span class="sc0">  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">clearScreen</span><span class="sc10">();</span><span class="sc2">//clear screen
+</span><span class="sc0">  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">1</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc2">//set cursor
+</span><span class="sc0">  </span><span class="sc2">//Intake Status indicator
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">Intakes</span><span class="sc10">){</span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc6">"Intakes Open"</span><span class="sc10">);}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc6">"Intakes Closed"</span><span class="sc10">);}</span><span class="sc0">
+  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">2</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc2">//Set cursor
+</span><span class="sc0">  </span><span class="sc2">//Drive speed indicator
+</span><span class="sc0">  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc6">"Drive Speed: "</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc11">Speed</span><span class="sc10">*</span><span class="sc4">100</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">setCursor</span><span class="sc10">(</span><span class="sc4">3</span><span class="sc10">,</span><span class="sc4">0</span><span class="sc10">);</span><span class="sc2">//Set cursor
+</span><span class="sc0">  </span><span class="sc2">//Breaks indicator
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">Breaks</span><span class="sc10">){</span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc6">"Breaks ON"</span><span class="sc10">);}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc11">screen</span><span class="sc10">.</span><span class="sc11">print</span><span class="sc10">(</span><span class="sc6">"Breaks OFF"</span><span class="sc10">);}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">Drive</span><span class="sc10">(</span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">stick_up</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">stick_side</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">float</span><span class="sc0"> </span><span class="sc11">speed_mod</span><span class="sc10">){</span><span class="sc2">//Using Arcade Control
+</span><span class="sc0">  </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">speed_mod</span><span class="sc10">*((</span><span class="sc11">stick_up</span><span class="sc0"> </span><span class="sc10">+</span><span class="sc0"> </span><span class="sc11">stick_side</span><span class="sc10">)/</span><span class="sc4">2</span><span class="sc10">),</span><span class="sc0"> </span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">  </span><span class="sc2">//speed(up+over)/2
+</span><span class="sc0">  </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">speed_mod</span><span class="sc10">*((</span><span class="sc11">stick_up</span><span class="sc0"> </span><span class="sc10">-</span><span class="sc0"> </span><span class="sc11">stick_side</span><span class="sc10">)/</span><span class="sc4">2</span><span class="sc10">),</span><span class="sc0"> </span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">  </span><span class="sc2">//speed(up-over)/2
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">OperateIntakes</span><span class="sc10">(</span><span class="sc16">void</span><span class="sc10">){</span><span class="sc2">//Run and operate the intakes
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc5">true</span><span class="sc10">){</span><span class="sc0">
+    </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">Intakes</span><span class="sc10">){</span><span class="sc2">//If intakes active, spin forward and back
+</span><span class="sc0">      </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">leftIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()</span><span class="sc0"> </span><span class="sc10">||</span><span class="sc0"> </span><span class="sc11">rightIntakeSwitch</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">()){</span><span class="sc2">//push out
+</span><span class="sc0">        </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">180</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc0"> </span><span class="sc2">//180 degrees is target to spin to
+</span><span class="sc0">      </span><span class="sc10">}</span><span class="sc0">
+      </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc2">//pull in
+</span><span class="sc0">        </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">);</span><span class="sc2">// 0 degrees is where the intakes are spinning to.
+</span><span class="sc0">      </span><span class="sc10">}</span><span class="sc0">
+      </span><span class="sc11">Intakes</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+    </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">(</span><span class="sc11">hold</span><span class="sc10">);</span><span class="sc2">//Stopping intakes when not active.
+</span><span class="sc0">    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">LocationDisplay</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">ScreenUpdate</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">DisplaySwitcher</span><span class="sc10">(){</span><span class="sc2">//Function to time the screen updates
+</span><span class="sc0">  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc5">true</span><span class="sc10">){</span><span class="sc2">//Thread loop
+</span><span class="sc0">    </span><span class="sc2">//Update Screen every 5th attempt
+</span><span class="sc0">    </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">ScreenUpdate</span><span class="sc0"> </span><span class="sc10">==</span><span class="sc0"> </span><span class="sc4">5</span><span class="sc10">){</span><span class="sc0">
+      </span><span class="sc11">ControllerScreenUpdater</span><span class="sc10">(</span><span class="sc11">Breaks</span><span class="sc10">,</span><span class="sc11">speed_mod</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">elevator_mod</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">Intakes</span><span class="sc10">);</span><span class="sc2">//Update Screen
+</span><span class="sc0">      </span><span class="sc11">ScreenUpdate</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+    </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+      </span><span class="sc11">ScreenUpdate</span><span class="sc10">++;</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">breaks</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc2">//Keeps track of breaks
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">xpressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc2">//Keeps track of X button state
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">Apressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc2">//Keeps track of A button state
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">IntakePos</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0"> </span><span class="sc2">//False = 0; True = 180
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">ypressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc2">//Keeps track of Y button state
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">running</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">SystemControls</span><span class="sc10">(</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">S1</span><span class="sc10">,</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">S2</span><span class="sc10">,</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">S3</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">S4</span><span class="sc10">,</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">X</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">A</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">Y</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">B</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">UP</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">DN</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">LF</span><span class="sc10">,</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">RT</span><span class="sc10">){</span><span class="sc2">//System Control Main Function
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(!</span><span class="sc11">breaks</span><span class="sc10">){</span><span class="sc2">//If not breaked, drive
+</span><span class="sc0">    </span><span class="sc11">Drive</span><span class="sc10">(</span><span class="sc11">S3</span><span class="sc10">,</span><span class="sc11">S4</span><span class="sc10">,</span><span class="sc11">speed_mod</span><span class="sc10">);</span><span class="sc2">//Drive system
+</span><span class="sc0">  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc2">//OperateIntakes();
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">A</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">Apressed</span><span class="sc10">){</span><span class="sc2">//Toggle breaks 
+</span><span class="sc0">    </span><span class="sc11">breaks</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">breaks</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc11">Apressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc2">//prevent multi-pressing
+</span><span class="sc0">  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+    </span><span class="sc5">if</span><span class="sc10">(!</span><span class="sc11">A</span><span class="sc10">){</span><span class="sc0">
+      </span><span class="sc11">Apressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc11">Elevator</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc11">elevator_mod</span><span class="sc10">*</span><span class="sc11">S2</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc2">//Spin elevator with the second axis
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">X</span><span class="sc10">){</span><span class="sc2">//Toggle the intakes
+</span><span class="sc0">    </span><span class="sc5">if</span><span class="sc10">(!</span><span class="sc11">xpressed</span><span class="sc10">){</span><span class="sc0">
+      </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">IntakePos</span><span class="sc10">){</span><span class="sc2">//push out
+</span><span class="sc0">        </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">180</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0"> </span><span class="sc2">//180 degrees is target to spin to
+</span><span class="sc0">      </span><span class="sc10">}</span><span class="sc0">
+      </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc2">//pull in
+</span><span class="sc0">        </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">0</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc2">// 0 degrees is where the intakes are spinning to.
+</span><span class="sc0">      </span><span class="sc10">}</span><span class="sc0">
+      </span><span class="sc11">IntakePos</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">IntakePos</span><span class="sc10">;</span><span class="sc0">
+      </span><span class="sc11">xpressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+    </span><span class="sc11">xpressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">Y</span><span class="sc10">){</span><span class="sc2">//Set intakes to 90 degrees on only one press
+</span><span class="sc0">    </span><span class="sc5">if</span><span class="sc10">(!</span><span class="sc11">ypressed</span><span class="sc10">){</span><span class="sc0">
+      </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">spinToPosition</span><span class="sc10">(</span><span class="sc4">90</span><span class="sc10">,</span><span class="sc11">degrees</span><span class="sc10">,</span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+    </span><span class="sc11">ypressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">else</span><span class="sc10">{</span><span class="sc0">
+    </span><span class="sc11">ypressed</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+    </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">position</span><span class="sc10">(</span><span class="sc11">degrees</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">==</span><span class="sc0"> </span><span class="sc4">90</span><span class="sc10">){</span><span class="sc0">
+      </span><span class="sc11">IntakeMotors</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">(</span><span class="sc11">hold</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc2">//ofs &lt;&lt; "Update\r\n";
+</span><span class="sc0">  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">UP</span><span class="sc10">){</span><span class="sc2">//Drive forward with up arrow
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">60</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">60</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">DN</span><span class="sc10">){</span><span class="sc2">//Drive in reverse with down arrow
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">60</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">60</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">LF</span><span class="sc10">){</span><span class="sc2">//Turn left
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">25</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">25</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">RT</span><span class="sc10">){</span><span class="sc2">//Turn right
+</span><span class="sc0">    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">forward</span><span class="sc10">,</span><span class="sc4">25</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">spin</span><span class="sc10">(</span><span class="sc11">reverse</span><span class="sc10">,</span><span class="sc4">25</span><span class="sc10">,</span><span class="sc11">velocityUnits</span><span class="sc10">::</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">B</span><span class="sc10">){</span><span class="sc2">//End recording
+</span><span class="sc0">    </span><span class="sc11">running</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">;</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+  </span><span class="sc5">if</span><span class="sc10">(</span><span class="sc11">S3</span><span class="sc0"> </span><span class="sc10">==</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc11">S4</span><span class="sc0"> </span><span class="sc10">==</span><span class="sc0"> </span><span class="sc4">0</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">UP</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">DN</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">LF</span><span class="sc0"> </span><span class="sc10">&amp;&amp;</span><span class="sc0"> </span><span class="sc10">!</span><span class="sc11">RT</span><span class="sc10">){</span><span class="sc0">
+    </span><span class="sc11">leftMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">rightMotor</span><span class="sc10">.</span><span class="sc11">stop</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">usercontrol</span><span class="sc10">(</span><span class="sc16">void</span><span class="sc10">){</span><span class="sc2">//User control state
+</span><span class="sc0">  </span><span class="sc11">ResetIntakes</span><span class="sc10">();</span><span class="sc2">//Zero the intakes
+</span><span class="sc0">  </span><span class="sc11">thread</span><span class="sc0"> </span><span class="sc11">Display</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">thread</span><span class="sc10">(</span><span class="sc11">DisplaySwitcher</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">move</span><span class="sc10">.</span><span class="sc11">Ready</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">S1</span><span class="sc10">,</span><span class="sc11">S2</span><span class="sc10">,</span><span class="sc11">S3</span><span class="sc10">,</span><span class="sc11">S4</span><span class="sc10">,</span><span class="sc11">X</span><span class="sc10">,</span><span class="sc11">A</span><span class="sc10">,</span><span class="sc11">Y</span><span class="sc10">,</span><span class="sc11">B</span><span class="sc10">,</span><span class="sc11">UP</span><span class="sc10">,</span><span class="sc11">DN</span><span class="sc10">,</span><span class="sc11">LF</span><span class="sc10">,</span><span class="sc11">RT</span><span class="sc10">;</span><span class="sc0">
+  </span><span class="sc5">while</span><span class="sc10">(</span><span class="sc5">true</span><span class="sc10">){</span><span class="sc2">//Start the system loop
+</span><span class="sc0">    </span><span class="sc2">//Get controls
+</span><span class="sc0">    </span><span class="sc11">S1</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Axis1</span><span class="sc10">.</span><span class="sc11">value</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">S2</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Axis2</span><span class="sc10">.</span><span class="sc11">value</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">S3</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Axis3</span><span class="sc10">.</span><span class="sc11">value</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">S4</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">Axis4</span><span class="sc10">.</span><span class="sc11">value</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">X</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonX</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">A</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonA</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">B</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonB</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">Y</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonY</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">UP</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonUp</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">DN</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonDown</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">LF</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonLeft</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc11">RT</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc10">.</span><span class="sc11">ButtonRight</span><span class="sc10">.</span><span class="sc11">pressing</span><span class="sc10">();</span><span class="sc0">
+    </span><span class="sc2">//Run controls through drive function
+</span><span class="sc0">    </span><span class="sc11">SystemControls</span><span class="sc10">(</span><span class="sc11">S1</span><span class="sc10">,</span><span class="sc11">S2</span><span class="sc10">,</span><span class="sc11">S3</span><span class="sc10">,</span><span class="sc11">S4</span><span class="sc10">,</span><span class="sc11">X</span><span class="sc10">,</span><span class="sc11">A</span><span class="sc10">,</span><span class="sc11">B</span><span class="sc10">,</span><span class="sc11">Y</span><span class="sc10">,</span><span class="sc11">UP</span><span class="sc10">,</span><span class="sc11">DN</span><span class="sc10">,</span><span class="sc11">LF</span><span class="sc10">,</span><span class="sc11">RT</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+
+</span><span class="sc2">//Starting function
+</span><span class="sc16">int</span><span class="sc0"> </span><span class="sc11">main</span><span class="sc10">()</span><span class="sc0"> </span><span class="sc10">{</span><span class="sc0">
+  </span><span class="sc2">// Initializing Robot Configuration. DO NOT REMOVE!
+</span><span class="sc0">  </span><span class="sc11">vexcodeInit</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc2">//Set intakes to maximum torque
+</span><span class="sc0">  </span><span class="sc11">leftIntake</span><span class="sc10">.</span><span class="sc11">setMaxTorque</span><span class="sc10">(</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">rightIntake</span><span class="sc10">.</span><span class="sc11">setMaxTorque</span><span class="sc10">(</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc11">pct</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc11">Gyro</span><span class="sc10">.</span><span class="sc11">calibrate</span><span class="sc10">(</span><span class="sc4">1</span><span class="sc10">);</span><span class="sc2">//Calibrate Gyroscopes
+</span><span class="sc0">  </span><span class="sc11">Competition</span><span class="sc10">.</span><span class="sc11">drivercontrol</span><span class="sc10">(</span><span class="sc11">usercontrol</span><span class="sc10">);</span><span class="sc2">//Driver control main loop
+</span><span class="sc0">  </span><span class="sc2">//Competition.autonomous(autonomous);
+</span><span class="sc0">  </span><span class="sc11">Competition</span><span class="sc10">.</span><span class="sc11">autonomous</span><span class="sc10">(</span><span class="sc11">autonomous</span><span class="sc10">);</span><span class="sc2">//Autonomous control system
+</span><span class="sc0">  </span><span class="sc11">pre_auton</span><span class="sc10">();</span><span class="sc0">
+  </span><span class="sc5">while</span><span class="sc0"> </span><span class="sc10">(</span><span class="sc5">true</span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">{</span><span class="sc0">
+    </span><span class="sc11">wait</span><span class="sc10">(</span><span class="sc4">100</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">msec</span><span class="sc10">);</span><span class="sc0">
+  </span><span class="sc10">}</span><span class="sc0">
+</span><span class="sc10">}</span><span class="sc0">
+</span></div></body>
+</html>

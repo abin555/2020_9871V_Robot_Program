@@ -39,7 +39,7 @@ void pre_auton(void){/*Pre_auton setup*/}
 float globalIntakeAngle;
 
 class autoMovement{//Define Autonomous Class Structure
-  float wheelDiameter = 3.0f;//Wheel Diameter constant
+  float wheelDiameter = 4.0f;//Wheel Diameter constant
   public:
   motor_group driveMotors = motor_group(leftMotor, rightMotor);//drive motor group
   motor_group intakeMotors = motor_group(leftIntake,rightIntake);//intake motor group
@@ -55,14 +55,18 @@ class autoMovement{//Define Autonomous Class Structure
 
 void autoMovement::Precise90Turn(bool dir){//Use encoders to precisely turn left or right 90 degrees
   if(!dir){//left
+	//Zero Encoder Position
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
+	//Spin motors concurrently to make robot turn 90 degrees left
     rightMotor.spinToPosition(290.60,degrees,100,velocityUnits::pct,false);
     leftMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
   }
   else{
+	  //Zero Encoder Position
     leftMotor.setPosition(0,degrees);
     rightMotor.setPosition(0,degrees);
+	//Spin motors concurrently to make robot turn 90 degrees right
     leftMotor.spinToPosition(274.60,degrees,100,velocityUnits::pct,false);
     rightMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
   }
@@ -145,24 +149,27 @@ void AutonomousIntakes(){//Intake Function for autonomous
   }
 }
 
-//TODO: Create Backup Autonomous!!!
+//Backup Autonomous
+//Scores into corner goal.
 void autonomous(void){
-  ResetIntakes();
-  Gyro.calibrate();
+  ResetIntakes();//Resets intakes
+  Gyro.calibrate();//Calibrates Gyro
   waitUntil(!Gyro.isCalibrating());
   //move.Ready();
-  Elevator.spin(forward,100,percent);
+  Elevator.spin(forward,100,percent);//Score ball into goal
   task::sleep(3000);
   Elevator.stop();
-  move.DriveForward(-14,100);
-  rightIntake.spinToPosition(90,degrees);
+  move.DriveForward(-14,100);//Backup
+  rightIntake.spinToPosition(90,degrees);//Open fist
   rightIntake.stop(hold);
+  //Turn 125 degrees
   rightMotor.spinFor(405.80,degrees,false);
   leftMotor.spinFor(-395.60,degrees,false);
   task::sleep(1500);
-  move.DriveForward(40,100);
-  move.Precise90Turn(false);
+  move.DriveForward(40,100);//Drive Forward to center goal
+  move.Precise90Turn(false);//Turn left 90 degrees
   task::sleep(2000);
+  //Punch center goal
   leftMotor.spin(forward,100,percent);
   rightMotor.spin(forward,100,percent);
   task::sleep(5000);
@@ -245,7 +252,7 @@ void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int
   //OperateIntakes();
   if(A && !Apressed){//Toggle breaks 
     breaks = !breaks;
-    Apressed = true;
+    Apressed = true;//prevent multi-pressing
   }
   else{
     if(!A){
@@ -312,6 +319,7 @@ void usercontrol(void){//User control state
   move.Ready();
   int S1,S2,S3,S4,X,A,Y,B,UP,DN,LF,RT;
   while(true){//Start the system loop
+	//Get controls
     S1 = Controller1.Axis1.value();
     S2 = Controller1.Axis2.value();
     S3 = Controller1.Axis3.value();
@@ -324,6 +332,7 @@ void usercontrol(void){//User control state
     DN = Controller1.ButtonDown.pressing();
     LF = Controller1.ButtonLeft.pressing();
     RT = Controller1.ButtonRight.pressing();
+	//Run controls through drive function
     SystemControls(S1,S2,S3,S4,X,A,B,Y,UP,DN,LF,RT);
   }
 }

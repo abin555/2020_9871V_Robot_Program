@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/1999/REC-html401-19991224/strict.dtd">
+<html>
+<head>
+<META http-equiv=Content-Type content="text/html; charset=UTF-8">
+<title>Exported from Notepad++</title>
+<style type="text/css">
+span {
+	font-family: 'Courier New';
+	font-size: 10pt;
+	color: #000000;
+}
+.sc0 {
+}
+.sc2 {
+	color: #008000;
+}
+.sc3 {
+	color: #008080;
+}
+.sc5 {
+	font-weight: bold;
+	color: #0000FF;
+}
+.sc9 {
+	color: #804000;
+}
+.sc10 {
+	font-weight: bold;
+	color: #000080;
+}
+.sc11 {
+}
+.sc16 {
+	color: #8000FF;
+}
+</style>
+</head>
+<body>
+<div style="float: left; white-space: pre; line-height: 1; background: #FFFFFF; "><span class="sc9">#include "vex.h"
+</span><span class="sc0">
+</span><span class="sc5">using</span><span class="sc0"> </span><span class="sc5">namespace</span><span class="sc0"> </span><span class="sc11">vex</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc5">using</span><span class="sc0"> </span><span class="sc11">signature</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">vision</span><span class="sc10">::</span><span class="sc11">signature</span><span class="sc10">;</span><span class="sc0">
+</span><span class="sc5">using</span><span class="sc0"> </span><span class="sc11">code</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">vision</span><span class="sc10">::</span><span class="sc11">code</span><span class="sc10">;</span><span class="sc0">
+
+</span><span class="sc2">// A global instance of brain used for printing to the V5 Brain screen
+</span><span class="sc11">brain</span><span class="sc0">  </span><span class="sc11">Brain</span><span class="sc10">;</span><span class="sc0">
+
+</span><span class="sc2">// VEXcode device constructors
+</span><span class="sc11">controller</span><span class="sc0"> </span><span class="sc11">Controller1</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">controller</span><span class="sc10">(</span><span class="sc11">primary</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">motor</span><span class="sc0"> </span><span class="sc11">rightIntake</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor</span><span class="sc10">(</span><span class="sc11">PORT1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">ratio18_1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">motor</span><span class="sc0"> </span><span class="sc11">leftIntake</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor</span><span class="sc10">(</span><span class="sc11">PORT2</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">ratio18_1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">motor</span><span class="sc0"> </span><span class="sc11">Elevator</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor</span><span class="sc10">(</span><span class="sc11">PORT3</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">ratio18_1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">motor</span><span class="sc0"> </span><span class="sc11">rightMotor</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor</span><span class="sc10">(</span><span class="sc11">PORT20</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">ratio18_1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">motor</span><span class="sc0"> </span><span class="sc11">leftMotor</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">motor</span><span class="sc10">(</span><span class="sc11">PORT11</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc11">ratio18_1</span><span class="sc10">,</span><span class="sc0"> </span><span class="sc5">false</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">limit</span><span class="sc0"> </span><span class="sc11">rightIntakeSwitch</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">limit</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">A</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">limit</span><span class="sc0"> </span><span class="sc11">leftIntakeSwitch</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">limit</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">B</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">accelerometer</span><span class="sc0"> </span><span class="sc11">accelX</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">accelerometer</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">C</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">accelerometer</span><span class="sc0"> </span><span class="sc11">accelY</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">accelerometer</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">D</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">gyro</span><span class="sc0"> </span><span class="sc11">GyroOLD</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">gyro</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">E</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">inertial</span><span class="sc0"> </span><span class="sc11">GyroB</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">inertial</span><span class="sc10">(</span><span class="sc11">PORT12</span><span class="sc10">);</span><span class="sc0">
+</span><span class="sc11">gyro</span><span class="sc0"> </span><span class="sc11">Gyro</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc11">gyro</span><span class="sc10">(</span><span class="sc11">Brain</span><span class="sc10">.</span><span class="sc11">ThreeWirePort</span><span class="sc10">.</span><span class="sc11">F</span><span class="sc10">);</span><span class="sc0">
+
+</span><span class="sc2">// VEXcode generated functions
+// define variable for remote controller enable/disable
+</span><span class="sc16">bool</span><span class="sc0"> </span><span class="sc11">RemoteControlCodeEnabled</span><span class="sc0"> </span><span class="sc10">=</span><span class="sc0"> </span><span class="sc5">true</span><span class="sc10">;</span><span class="sc0">
+
+</span><span class="sc3">/**
+ * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
+ * 
+ * This should be called at the start of your int main function.
+ */</span><span class="sc0">
+</span><span class="sc16">void</span><span class="sc0"> </span><span class="sc11">vexcodeInit</span><span class="sc10">(</span><span class="sc0"> </span><span class="sc16">void</span><span class="sc0"> </span><span class="sc10">)</span><span class="sc0"> </span><span class="sc10">{</span><span class="sc0">
+  </span><span class="sc2">// nothing to initialize
+</span><span class="sc10">}</span></div></body>
+</html>
