@@ -26,6 +26,10 @@
 
 #include "vex.h"
 #include "math.h"
+#include <sstream>
+
+using std::stringstream;
+using std::string;
 
 using namespace vex;
 competition Competition;//Competition object
@@ -39,84 +43,10 @@ void pre_auton(void){/*Pre_auton setup*/}
 float globalIntakeAngle;
 
 class autoMovement{//Define Autonomous Class Structure
-  float wheelDiameter = 4.0f;//Wheel Diameter constant
   public:
-  motor_group driveMotors = motor_group(leftMotor, rightMotor);//drive motor group
-  motor_group intakeMotors = motor_group(leftIntake,rightIntake);//intake motor group
-  void TurnRight(float degrees,float speed);//Turn right function definition
-  void TurnLeft(float degrees,float speed);//Turn left function definition
-  void DriveForward(float inches, float speed);//Drive foward definition
-  void SetIntakes(float percentOpen, int timeout);//Set Intakes definition
-  void Precise90Turn(bool dir);//Precisely turn 90 degrees definition
   void Ready();//Readying function definition
-  int x = 0;
-  int y = 0;
 };
 
-void autoMovement::Precise90Turn(bool dir){//Use encoders to precisely turn left or right 90 degrees
-  if(!dir){//left
-	//Zero Encoder Position
-    leftMotor.setPosition(0,degrees);
-    rightMotor.setPosition(0,degrees);
-	//Spin motors concurrently to make robot turn 90 degrees left
-    rightMotor.spinToPosition(290.60,degrees,100,velocityUnits::pct,false);
-    leftMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
-  }
-  else{
-	  //Zero Encoder Position
-    leftMotor.setPosition(0,degrees);
-    rightMotor.setPosition(0,degrees);
-	//Spin motors concurrently to make robot turn 90 degrees right
-    leftMotor.spinToPosition(274.60,degrees,100,velocityUnits::pct,false);
-    rightMotor.spinToPosition(-340.40,degrees,100,velocityUnits::pct,false);
-  }
-}
-
-void autoMovement::TurnRight(float Degrees,float speed){//Turn right using gyroscope
-  Gyro.setHeading(0,deg);//reset heading
-  leftMotor.spin(forward,speed,percent);//spin left motor
-  rightMotor.spin(reverse,speed,percent);//spin right motor
-  while(Gyro.heading(degrees) < Degrees-1 || Gyro.heading(degrees) > Degrees+1){//Wait until angle is correct
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.setCursor(0,0);
-    Controller1.Screen.print(Gyro.heading(degrees));
-    Controller1.Screen.setCursor(1,0);
-  } 
-  //Stop motors
-  leftMotor.stop();
-  rightMotor.stop();
-  task::sleep(500);
-}
-
-void autoMovement::TurnLeft(float Degrees, float speed){//Turn left using gyroscope
-  Gyro.setHeading(0,deg);//reset heading
-  leftMotor.spin(reverse,speed,percent);//spin left motor
-  rightMotor.spin(forward,speed,percent);//spin right motor
-  while(Gyro.heading(degrees) < 360-Degrees-1 || Gyro.heading(degrees) > 360-Degrees+1){//Wait until angle is correct
-    Controller1.Screen.clearScreen();
-    Controller1.Screen.setCursor(0,0);
-    Controller1.Screen.print(Gyro.heading(degrees));
-    Controller1.Screen.setCursor(1,0);
-  } 
-  //Stop motors
-  leftMotor.stop();
-  rightMotor.stop();
-  task::sleep(500);
-}
-
-void autoMovement::DriveForward(float inches, float speed){//Drive distance function
-  float targetAngle = inches*360/($PI*wheelDiameter);//Calculated turn amount in degrees
-  driveMotors.setPosition(0,deg);
-  
-  driveMotors.spinToPosition(rightMotor.position(degrees)+targetAngle,degrees);//spin drive motors to calculated position
-  driveMotors.stop();//Stop motors when position reached.
-  task::sleep(500);
-}
-
-void autoMovement::SetIntakes(float percentOpen,int timeout){//Set intakes to percentage open
-  globalIntakeAngle = 180*(percentOpen/100);//Calculated angle in degrees
-  intakeMotors.spinToPosition(globalIntakeAngle,deg);//spin to calculated angle
-}
 void autoMovement::Ready(){//Deploy top
   Elevator.spin(reverse,150,percent);//spin elevator down
   task::sleep(2000);//Wait
@@ -138,69 +68,23 @@ void ResetIntakes(){//Zero the intake positions
   leftIntake.setPosition(0,degrees);
   leftIntake.setPosition(0,turns);
 }
-void AutonomousIntakes(){//Intake Function for autonomous
-  while(true){
-    if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-      IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
-    }
-    else{//pull in
-      IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
-    }
-  }
-}
-
-//Backup Autonomous
-//Scores into corner goal.
-void autonomous(void){
-  ResetIntakes();//Resets intakes
-  Gyro.calibrate();//Calibrates Gyro
-  waitUntil(!Gyro.isCalibrating());
-  //move.Ready();
-  Elevator.spin(forward,100,percent);//Score ball into goal
-  task::sleep(3000);
-  Elevator.stop();
-  move.DriveForward(-14,100);//Backup
-  rightIntake.spinToPosition(90,degrees);//Open fist
-  rightIntake.stop(hold);
-  //Turn 125 degrees
-  rightMotor.spinFor(405.80,degrees,false);
-  leftMotor.spinFor(-395.60,degrees,false);
-  task::sleep(1500);
-  move.DriveForward(40,100);//Drive Forward to center goal
-  move.Precise90Turn(false);//Turn left 90 degrees
-  task::sleep(2000);
-  //Punch center goal
-  leftMotor.spin(forward,100,percent);
-  rightMotor.spin(forward,100,percent);
-  task::sleep(5000);
-  leftMotor.stop(hold);
-  rightMotor.stop(hold);
-}
 
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
 float speed_mod = 1; 
 float elevator_mod = 1;
-bool Intakes = false;
-bool elevator = false;
-bool elevatormode = true;
-bool elevatordir = false;
-bool IntakeCall = false;
+int Intakes = 0; //0 = closed | 1 = 90 degrees | 2 = 180 degrees
 
-void ControllerScreenUpdater(bool Breaks, float Speed, float elevator,  bool IntakeSet){//Updates Screen
-  screen.clearScreen();//clear screen
-  screen.setCursor(1,0);//set cursor
-  //Intake Status indicator
-  if(Intakes){screen.print("Intakes Open");}
-  else{screen.print("Intakes Closed");}
-  screen.setCursor(2,0);//Set cursor
-  //Drive speed indicator
-  screen.print("Drive Speed: ");
-  screen.print(Speed*100);
-  screen.setCursor(3,0);//Set cursor
-  //Breaks indicator
-  if(Breaks){screen.print("Breaks ON");}
-  else{screen.print("Breaks OFF");}
+void ControllerScreenUpdater(){//Updates Screen
+  double ElevatorTemp = Elevator.temperature(percent);
+  double LeftTemp = leftMotor.temperature(percent);
+  double RightTemp = rightMotor.temperature(percent);
+
+  std::stringstream temp;
+  temp << "E:" << ElevatorTemp << " LM: " << LeftTemp << " RM: " << RightTemp;
+  Controller1.Screen.setCursor(1,1);
+  Controller1.Screen.print(temp.str());
+  
 }
 
 void Drive(float stick_up, float stick_side, float speed_mod){//Using Arcade Control
@@ -208,29 +92,14 @@ void Drive(float stick_up, float stick_side, float speed_mod){//Using Arcade Con
   rightMotor.spin(forward, speed_mod*((stick_up - stick_side)/2), velocityUnits::pct);  //speed(up-over)/2
 }
 
-void OperateIntakes(void){//Run and operate the intakes
-  while(true){
-    if(Intakes){//If intakes active, spin forward and back
-      if(leftIntakeSwitch.pressing() || rightIntakeSwitch.pressing()){//push out
-        IntakeMotors.spinToPosition(180,degrees); //180 degrees is target to spin to
-      }
-      else{//pull in
-        IntakeMotors.spinToPosition(0,degrees);// 0 degrees is where the intakes are spinning to.
-      }
-      Intakes = false;
-    }
-    else{
-      IntakeMotors.stop(hold);//Stopping intakes when not active.
-    }
-  }
-}
+
 bool LocationDisplay = false;
 int ScreenUpdate = 0;
 void DisplaySwitcher(){//Function to time the screen updates
   while(true){//Thread loop
     //Update Screen every 5th attempt
     if(ScreenUpdate == 5){
-      ControllerScreenUpdater(Breaks,speed_mod, elevator_mod, Intakes);//Update Screen
+      ControllerScreenUpdater();//Update Screen
       ScreenUpdate = 0;
     }
     else{
@@ -239,54 +108,35 @@ void DisplaySwitcher(){//Function to time the screen updates
   }
 }
 
-bool breaks = false;//Keeps track of breaks
-bool xpressed = false;//Keeps track of X button state
-bool Apressed = false;//Keeps track of A button state
-bool IntakePos = true; //False = 0; True = 180
-bool ypressed = false;//Keeps track of Y button state
-bool running = true;
+bool Xpress = false;
 void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int UP, int DN, int LF,int RT){//System Control Main Function
-  if(!breaks){//If not breaked, drive
-    Drive(S3,S4,speed_mod);//Drive system
-  }
-  //OperateIntakes();
-  if(A && !Apressed){//Toggle breaks 
-    breaks = !breaks;
-    Apressed = true;//prevent multi-pressing
-  }
-  else{
-    if(!A){
-      Apressed = false;
-    }
-  }
+  
+  Drive(S3,S4,speed_mod);
   Elevator.spin(forward,elevator_mod*S2,velocityUnits::pct);//Spin elevator with the second axis
-  if(X){//Toggle the intakes
-    if(!xpressed){
-      if(IntakePos){//push out
-        IntakeMotors.spinToPosition(180,degrees,false); //180 degrees is target to spin to
-      }
-      else{//pull in
-        IntakeMotors.spinToPosition(0,degrees,false);// 0 degrees is where the intakes are spinning to.
-      }
-      IntakePos = !IntakePos;
-      xpressed = true;
+
+  if(X && !Xpress){
+    if(Intakes < 2){
+      Intakes++;
     }
-  }
-  else{
-    xpressed = false;
-  }
-  if(Y){//Set intakes to 90 degrees on only one press
-    if(!ypressed){
+    else{
+      Intakes = 0;
+    }
+    Xpress = true;
+    if(Intakes == 0){
+      IntakeMotors.spinToPosition(0,degrees,false);
+    }
+    if(Intakes == 1){
       IntakeMotors.spinToPosition(90,degrees,false);
     }
-    ypressed = true;
-  }
-  else{
-    ypressed = false;
-    if(IntakeMotors.position(degrees) == 90){
-      IntakeMotors.stop(hold);
+    if(Intakes == 2){
+      IntakeMotors.spinToPosition(180,degrees,false);
     }
   }
+  if(!X){
+    Xpress = false;
+    IntakeMotors.stop(hold);
+  }
+
   //ofs << "Update\r\n";
   if(UP){//Drive forward with up arrow
     leftMotor.spin(forward,60,velocityUnits::pct);
@@ -304,9 +154,7 @@ void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int
     leftMotor.spin(forward,25,velocityUnits::pct);
     rightMotor.spin(reverse,25,velocityUnits::pct);
   }
-  if(B){//End recording
-    running = false;
-  }
+  
   if(S3 == 0 && S4 == 0 && !UP && !DN && !LF && !RT){
     leftMotor.stop();
     rightMotor.stop();
@@ -347,7 +195,6 @@ int main() {
   Gyro.calibrate(1);//Calibrate Gyroscopes
   Competition.drivercontrol(usercontrol);//Driver control main loop
   //Competition.autonomous(autonomous);
-  Competition.autonomous(autonomous);//Autonomous control system
   pre_auton();
   while (true) {
     wait(100, msec);
