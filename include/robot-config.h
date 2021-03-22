@@ -6,7 +6,7 @@ extern brain Brain;
 extern controller Controller1;
 extern motor rightIntake;
 extern motor leftIntake;
-extern motor Elevator;
+extern motor Elevator1;
 extern motor rightMotor;
 extern motor leftMotor;
 extern limit rightIntakeSwitch;
@@ -16,6 +16,7 @@ extern accelerometer accelY;
 extern gyro GyroOLD;
 extern inertial GyroB;
 extern gyro Gyro;
+extern motor Elevator2;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

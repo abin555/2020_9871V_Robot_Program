@@ -12,7 +12,7 @@
 // Controller1          controller                    
 // rightIntake          motor         1               
 // leftIntake           motor         2               
-// Elevator             motor         3               
+// Elevator1            motor         3               
 // rightMotor           motor         20              
 // leftMotor            motor         11              
 // rightIntakeSwitch    limit         A               
@@ -22,6 +22,7 @@
 // GyroOLD              gyro          E               
 // GyroB                inertial      12              
 // Gyro                 gyro          F               
+// Elevator2            motor         4               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
@@ -35,6 +36,7 @@ using namespace vex;
 competition Competition;//Competition object
 motor_group IntakeMotors = motor_group(leftIntake,rightIntake);//Intake motor group
 motor_group driveM = motor_group(leftMotor,rightMotor);//Drive Motor group
+motor_group Elevator = motor_group(Elevator1,Elevator2);
 #define screen Controller1.Screen//Define screen mapping
 #define $PI 3.141592653589//Aproximate PI
 
@@ -79,11 +81,11 @@ void ControllerScreenUpdater(){//Updates Screen
   double ElevatorTemp = Elevator.temperature(percent);
   double LeftTemp = leftMotor.temperature(percent);
   double RightTemp = rightMotor.temperature(percent);
-
+  Controller1.Screen.clearScreen();
   std::stringstream temp;
   temp << "E:" << ElevatorTemp << " LM: " << LeftTemp << " RM: " << RightTemp;
   Controller1.Screen.setCursor(1,1);
-  Controller1.Screen.print(temp.str());
+  Controller1.Screen.print(temp.str().c_str());
   
 }
 
@@ -134,7 +136,16 @@ void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int
   }
   if(!X){
     Xpress = false;
-    IntakeMotors.stop(hold);
+    
+    if(Intakes == 0 && rightIntake.position(degrees) == 0){
+      IntakeMotors.stop(hold);
+    }
+    else if(Intakes == 1 && rightIntake.position(degrees) == 90){
+      IntakeMotors.stop(hold);
+    }
+    else if(Intakes == 2 && rightIntake.position(degrees) == 180){
+      IntakeMotors.stop(hold);
+    }
   }
 
   //ofs << "Update\r\n";
@@ -154,11 +165,11 @@ void SystemControls(int S1,int S2,int S3, int S4,int X, int A, int Y, int B, int
     leftMotor.spin(forward,25,velocityUnits::pct);
     rightMotor.spin(reverse,25,velocityUnits::pct);
   }
-  
+  /*
   if(S3 == 0 && S4 == 0 && !UP && !DN && !LF && !RT){
     leftMotor.stop();
     rightMotor.stop();
-  }
+  }*/
 }
 
 void usercontrol(void){//User control state

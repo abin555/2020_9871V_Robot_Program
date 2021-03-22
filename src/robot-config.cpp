@@ -11,7 +11,7 @@ brain  Brain;
 controller Controller1 = controller(primary);
 motor rightIntake = motor(PORT1, ratio18_1, false);
 motor leftIntake = motor(PORT2, ratio18_1, true);
-motor Elevator = motor(PORT3, ratio18_1, true);
+motor Elevator1 = motor(PORT3, ratio18_1, true);
 motor rightMotor = motor(PORT20, ratio18_1, true);
 motor leftMotor = motor(PORT11, ratio18_1, false);
 limit rightIntakeSwitch = limit(Brain.ThreeWirePort.A);
@@ -21,6 +21,7 @@ accelerometer accelY = accelerometer(Brain.ThreeWirePort.D);
 gyro GyroOLD = gyro(Brain.ThreeWirePort.E);
 inertial GyroB = inertial(PORT12);
 gyro Gyro = gyro(Brain.ThreeWirePort.F);
+motor Elevator2 = motor(PORT4, ratio18_1, true);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable
