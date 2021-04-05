@@ -73,17 +73,17 @@ void ResetIntakes(){//Zero the intake positions
 
 //System Variables for operating robot. Tells Robot State
 bool Breaks = false;
-float speed_mod = 1; 
+float speed_mod = 0.9; 
 float elevator_mod = 1;
 int Intakes = 0; //0 = closed | 1 = 90 degrees | 2 = 180 degrees
 
 void ControllerScreenUpdater(){//Updates Screen
-  double ElevatorTemp = Elevator.temperature(percent);
+  double ElevatorTemp = Elevator1.temperature(percent);
   double LeftTemp = leftMotor.temperature(percent);
   double RightTemp = rightMotor.temperature(percent);
   Controller1.Screen.clearScreen();
   std::stringstream temp;
-  temp << "E:" << ElevatorTemp << " LM: " << LeftTemp << " RM: " << RightTemp;
+  temp << "E1:" << ElevatorTemp << " LM: " << LeftTemp << " RM: " << RightTemp;
   Controller1.Screen.setCursor(1,1);
   Controller1.Screen.print(temp.str().c_str());
   
