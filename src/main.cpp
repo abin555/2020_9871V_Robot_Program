@@ -51,7 +51,7 @@ class autoMovement{//Define Autonomous Class Structure
 
 void autoMovement::Ready(){//Deploy top
   Elevator.spin(reverse,150,percent);//spin elevator down
-  task::sleep(2000);//Wait
+  task::sleep(1000);//Wait
   Elevator.stop();//stop
 } 
 autoMovement move;//Define autonomous class
@@ -197,9 +197,10 @@ void usercontrol(void){//User control state
 }
 
 void autonomous(){
+  IntakeMotors.stop(hold);
   move.Ready();
   Elevator.spin(forward,100,pct);
-  task::sleep(1000);
+  task::sleep(5000);
   Elevator.stop();
 }
 
