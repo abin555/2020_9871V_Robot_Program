@@ -196,6 +196,13 @@ void usercontrol(void){//User control state
   }
 }
 
+void autonomous(){
+  move.Ready();
+  Elevator.spin(forward,100,pct);
+  task::sleep(1000);
+  Elevator.stop();
+}
+
 //Starting function
 int main() {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -205,6 +212,7 @@ int main() {
   rightIntake.setMaxTorque(100,pct);
   Gyro.calibrate(1);//Calibrate Gyroscopes
   Competition.drivercontrol(usercontrol);//Driver control main loop
+  Competition.autonomous(autonomous);
   //Competition.autonomous(autonomous);
   pre_auton();
   while (true) {
